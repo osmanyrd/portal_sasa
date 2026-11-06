@@ -1,0 +1,62 @@
+{% extends "wagtailadmin/base.html" %}
+{% load i18n %}
+
+{% block titletag %}Sincronizar personas jurídicas{% endblock %}
+
+{% block content %}
+  <header>
+    <div class="row">
+      <div class="left">
+        <div class="col header__label">
+          <h1>Sincronizar personas jurídicas desde ERP</h1>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="nice-padding">
+    <div class="row">
+      <div class="col8">
+        <div class="panel">
+          <h2>Pegá los datos JSON</h2>
+          <p>Cada registro debe tener: <code>cif_nit</code>, <code>nombre_empresa</code>, <code>email</code>,
+             y opcionalmente: <code>representante_legal</code>, <code>telefono</code>, <code>activo</code>.</p>
+
+          <form method="post" action="{% url 'usuarios_sincronizar' %}">
+            {% csrf_token %}
+            <textarea name="datos_json" class="django-admin-text-widget" rows="12"
+                      placeholder='[
+  {"cif_nit": "CUP12345", "nombre_empresa": "Mi Empresa", "email": "info@empresa.cu", "representante_legal": "Juan Pérez"}
+]'></textarea>
+            <br>
+            <input type="submit" value="Sincronizar" class="button button-primary">
+          </form>
+        </div>
+      </div>
+
+      <div class="col4">
+        <div class="panel">
+          <h2>Personas jurídicas actuales</h2>
+          {% if perfiles_juridicos %}
+          <table class="table">
+            <thead>
+              <tr><th>Empresa</th><th>CIF</th><th>Estado</th></tr>
+            </thead>
+            <tbody>
+              {% for p in perfiles_juridicos %}
+              <tr>
+                <td>{{ p.nombre_empresa }}</td>
+                <td><code>{{ p.cif_nit }}</code></td>
+                <td>{% if p.activo %}<span style="color:green">Activo</span>{% else %}<span style="color:red">Inactivo</span>{% endif %}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p>No hay personas jurídicas registradas.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

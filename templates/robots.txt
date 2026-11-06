@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /cms/
+Disallow: /django-admin/
+Disallow: /cuenta/
+Disallow: /documentos/
+Allow: /
+
+Sitemap: {{ request.scheme }}://{{ request.get_host }}/sitemap.xml

@@ -1,0 +1,101 @@
+{% extends "usuarios/base_usuario.html" %}
+{% load static %}
+
+{% block title %}Registro | Servicios Automotores S.A{% endblock %}
+
+{% block auth_card %}
+<div class="auth-card auth-card--wide mx-auto" style="max-width:560px">
+  <div class="auth-card__header">
+    <h1 class="auth-card__title">Crear cuenta</h1>
+    <p class="auth-card__subtitle">Registro para personas naturales. ¿Sos empresa? <a href="{% url 'registro_juridico' %}" class="auth-link">Registrate acá</a></p>
+  </div>
+
+  <form method="post" class="auth-form" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+      {% for e in form.non_field_errors %}<p class="mb-0">{{ e }}</p>{% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label for="id_first_name" class="form-label fw-semibold">Nombre</label>
+        <input type="text" name="first_name" id="id_first_name" class="form-control"
+               value="{{ form.first_name.value|default:'' }}" required>
+        {% if form.first_name.errors %}<div class="invalid-feedback d-block">{{ form.first_name.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="col-md-6">
+        <label for="id_last_name" class="form-label fw-semibold">Apellido</label>
+        <input type="text" name="last_name" id="id_last_name" class="form-control"
+               value="{{ form.last_name.value|default:'' }}" required>
+        {% if form.last_name.errors %}<div class="invalid-feedback d-block">{{ form.last_name.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="col-12">
+        <label for="id_username" class="form-label fw-semibold">Usuario</label>
+        <input type="text" name="username" id="id_username" class="form-control"
+               value="{{ form.username.value|default:'' }}" required>
+        {% if form.username.errors %}<div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="col-12">
+        <label for="id_email" class="form-label fw-semibold">Correo electrónico</label>
+        <input type="email" name="email" id="id_email" class="form-control"
+               value="{{ form.email.value|default:'' }}" required>
+        {% if form.email.errors %}<div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="col-md-6">
+        <label for="id_telefono" class="form-label fw-semibold">Teléfono</label>
+        <input type="text" name="telefono" id="id_telefono" class="form-control"
+               value="{{ form.telefono.value|default:'' }}" required>
+        {% if form.telefono.errors %}<div class="invalid-feedback d-block">{{ form.telefono.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="col-md-6">
+        <label for="id_numero_identidad" class="form-label fw-semibold">N° de identidad</label>
+        <input type="text" name="numero_identidad" id="id_numero_identidad" class="form-control"
+               value="{{ form.numero_identidad.value|default:'' }}" required>
+        {% if form.numero_identidad.errors %}<div class="invalid-feedback d-block">{{ form.numero_identidad.errors.0 }}</div>{% endif %}
+        <div class="form-text">{{ form.numero_identidad.help_text }}</div>
+      </div>
+
+      <div class="col-md-6">
+        <label for="id_password1" class="form-label fw-semibold">Contraseña</label>
+        <input type="password" name="password1" id="id_password1" class="form-control" required>
+        {% if form.password1.errors %}<div class="invalid-feedback d-block">{{ form.password1.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="col-md-6">
+        <label for="id_password2" class="form-label fw-semibold">Confirmar contraseña</label>
+        <input type="password" name="password2" id="id_password2" class="form-control" required>
+        {% if form.password2.errors %}<div class="invalid-feedback d-block">{{ form.password2.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="col-12">
+        <div class="form-check">
+          <input type="checkbox" name="acepta_terminos" id="id_acepta_terminos"
+                 class="form-check-input" {% if form.acepta_terminos.value %}checked{% endif %} required>
+          <label for="id_acepta_terminos" class="form-check-label">
+            Acepto los <a href="#" class="auth-link">términos y condiciones</a>
+          </label>
+        </div>
+        {% if form.acepta_terminos.errors %}<div class="invalid-feedback d-block">{{ form.acepta_terminos.errors.0 }}</div>{% endif %}
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-accent w-100 mt-4 mb-3">
+      <i class="bi bi-person-plus me-1" aria-hidden="true"></i> Crear cuenta
+    </button>
+  </form>
+
+  <div class="auth-card__footer">
+    <p>¿Ya tenés cuenta? <a href="{% url 'login' %}" class="auth-link">Iniciá sesión</a></p>
+    <div class="auth-type-toggle" style="text-align:center;margin-top:1rem;font-size:.85rem;color:#888">
+      ¿Sos una empresa? <a href="{% url 'registro_juridico' %}" class="auth-link">Registrate como jurídica</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

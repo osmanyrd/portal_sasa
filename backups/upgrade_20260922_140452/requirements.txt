@@ -1,0 +1,39 @@
+# ============================================================
+#  requirements.txt — Producción
+#  Instalar: pip install -r requirements.txt
+# ============================================================
+
+# --- Django core ---
+Django>=5.1,<5.2
+wagtail>=6.3,<7.0
+
+# --- Base de datos ---
+psycopg2-binary>=2.9.9
+
+# --- Servidor WSGI ---
+gunicorn>=23.0.0
+
+# --- Configuración desde variables de entorno ---
+django-environ>=0.11.2
+
+# --- Imágenes ---
+Pillow>=10.4.0
+
+# --- Seguridad / OAuth2 ---
+cryptography>=41.0.0
+django-oauth-toolkit==3.4.1
+
+# --- CORS ---
+django-cors-headers==4.9.0
+
+# --- Estáticos en producción (sin nginx) ---
+whitenoise>=6.6.0
+
+# --- Dependencias Wagtail no declaradas directamente ---
+django-modelcluster>=6.5
+django-taggit>=6.1.0
+django-treebeard>=4.8.0
+django-filter>=25.0
+openpyxl>=3.1.0
+telepath>=0.3.0
+draftjs_exporter>=5.2.0

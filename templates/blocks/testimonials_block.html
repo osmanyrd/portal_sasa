@@ -1,0 +1,68 @@
+{% load wagtailimages_tags %}
+{% load wagtailimages_tags %}
+<section class="{{ design_classes }}">
+    <div class="container">
+        {% if value.heading %}
+            <h2 class="display-6 fw-bold text-center mb-5">{{ value.heading }}</h2>
+        {% endif %}
+
+        {% if value.display == "carousel" %}
+            <div id="testimonios-{{ uid }}" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-indicators position-static mt-4">
+                    {% for item in value.items %}
+                        <button type="button" data-bs-target="#testimonios-{{ uid }}"
+                                data-bs-slide-to="{{ forloop.counter0 }}"
+                                {% if forloop.first %}class="active" aria-current="true"{% endif %}
+                                aria-label="Testimonio {{ forloop.counter }}"></button>
+                    {% endfor %}
+                </div>
+                <div class="carousel-inner">
+                    {% for item in value.items %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <blockquote class="testimonial mx-auto text-center col-lg-8 py-4 px-3">
+                                <i class="bi bi-quote display-5 text-brand"></i>
+                                <p class="fs-5 fst-italic">{{ item.quote }}</p>
+                                <footer class="d-flex align-items-center justify-content-center gap-3 mt-4">
+                                    {% if item.photo %}
+                                        {% image item.photo fill-96x96 class="avatar rounded-circle object-fit-cover" alt="{{ item.author }}" %}
+                                    {% endif %}
+                                    <cite class="d-block not-italic">
+                                        <span class="fw-semibold d-block">{{ item.author }}</span>
+                                        {% if item.role %}<span class="text-secondary small">{{ item.role }}</span>{% endif %}
+                                    </cite>
+                                </footer>
+                            </blockquote>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#testimonios-{{ uid }}" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Anterior</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#testimonios-{{ uid }}" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Siguiente</span>
+                </button>
+            </div>
+        {% else %}
+            <div class="row g-4 justify-content-center">
+                {% for item in value.items %}
+                    <div class="col-md-6 col-lg-4">
+                        <blockquote class="card h-100 border-0 shadow-sm rounded-4 p-4 m-0">
+                            <p class="fst-italic">“{{ item.quote }}”</p>
+                            <footer class="mt-auto d-flex align-items-center gap-3">
+                                {% if item.photo %}
+                                    {% image item.photo fill-96x96 class="avatar rounded-circle object-fit-cover" alt="{{ item.author }}" %}
+                                {% endif %}
+                                <cite class="not-italic">
+                                    <span class="fw-semibold d-block">{{ item.author }}</span>
+                                    {% if item.role %}<span class="text-secondary small">{{ item.role }}</span>{% endif %}
+                                </cite>
+                            </footer>
+                        </blockquote>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</section>

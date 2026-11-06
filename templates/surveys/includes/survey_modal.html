@@ -1,0 +1,92 @@
+{# Modal de invitacion a encuesta -- se incluye con {% mostrar_modal_encuesta %} #}
+{% load static survey_tags %}
+
+{% if encuesta_modal %}
+<div class="survey-modal-overlay" id="surveyModalOverlay" style="display:none;">
+  <div class="survey-modal" role="dialog" aria-modal="true" aria-labelledby="surveyModalTitle">
+    <div class="survey-modal-header">
+      <h5 class="survey-modal-title" id="surveyModalTitle">
+        <i class="bi bi-clipboard2-pulse me-2"></i>{{ encuesta_modal.titulo_publico }}
+      </h5>
+      <button class="survey-modal-close" id="surveyModalClose" aria-label="Cerrar">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div class="survey-modal-body">
+      {% if encuesta_modal.descripcion %}
+        <p class="survey-modal-desc">{{ encuesta_modal.descripcion }}</p>
+      {% endif %}
+      <p class="survey-modal-invite">Te invitamos a participar. Tu opinion es importante para nosotros.</p>
+    </div>
+    <div class="survey-modal-footer">
+      <button class="survey-modal-btn survey-modal-btn-skip" id="surveyModalSkip">
+        Ahora no
+      </button>
+      <a class="survey-modal-btn survey-modal-btn-accept"
+         id="surveyModalAccept"
+         href="/encuestas/{{ encuesta_modal.pk }}/votar/">
+        Participar
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var encuestaId = {{ encuesta_modal.pk }};
+  var diasSupresion = {{ encuesta_modal.dias_supresion_modal }};
+  var cookieName = "survey_suppressed_" + encuestaId;
+  var overlay = document.getElementById("surveyModalOverlay");
+  var btnClose = document.getElementById("surveyModalClose");
+  var btnSkip = document.getElementById("surveyModalSkip");
+  var btnAccept = document.getElementById("surveyModalAccept");
+
+  function getCookie(name) {
+    var v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : null;
+  }
+
+  function setCookie(name, val, days) {
+    var d = new Date();
+    d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+    document.cookie = name + "=" + val + ";expires=" + d.toUTCString() + ";path=/;SameSite=Lax";
+  }
+
+  function hideModal() {
+    overlay.classList.add("is-leaving");
+    setTimeout(function(){
+      overlay.style.display = "none";
+      overlay.classList.remove("is-leaving");
+      overlay.style.opacity = "0";
+    }, 350);
+  }
+
+  function showModal() {
+    overlay.style.display = "flex";
+    overlay.style.opacity = "1";
+  }
+
+  // Solo mostrar si no hay cookie de supresion y no esta ya completada
+  if (!getCookie(cookieName)) {
+    showModal();
+  }
+
+  btnClose.addEventListener("click", function(){
+    setCookie(cookieName, "1", diasSupresion);
+    hideModal();
+  });
+
+  btnSkip.addEventListener("click", function(){
+    setCookie(cookieName, "1", diasSupresion);
+    hideModal();
+  });
+
+  btnAccept.addEventListener("click", function(e){
+    e.preventDefault();
+    setCookie(cookieName, "1", diasSupresion);
+    hideModal();
+    window.location.href = btnAccept.href;
+  });
+})();
+</script>
+{% endif %}

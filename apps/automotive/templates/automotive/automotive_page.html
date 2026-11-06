@@ -1,0 +1,911 @@
+{% extends "automotive/base_automotive.html" %}
+{% load static wagtailimages_tags wagtailcore_tags cache %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'automotive/css/automotive-destacados.css' %}">
+    <style>
+    /* ── Carrusel de inicio ── */
+    .hero-carousel {
+      position: relative;
+      width: 100%;
+      height: 92vh;
+      min-height: 560px;
+      max-height: 940px;
+      overflow: hidden;
+      background: #000;
+    }
+    .hero-carousel__slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity .8s ease-in-out;
+      z-index: 0;
+    }
+    .hero-carousel__slide.is-active {
+      opacity: 1;
+      z-index: 1;
+    }
+    /* Fondo desenfocado: aporta color/textura sin recortar el producto */
+    .hero-carousel__blur {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: blur(28px) brightness(.5);
+      transform: scale(1.15);
+      z-index: 0;
+    }
+    /* Imagen a pantalla completa: presentación principal y novedades en modo
+       'completo'. El fondo desenfocado no es necesario: la foto lo cubre. */
+    .hero-carousel__img--cover {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      z-index: 1;
+    }
+    /* Zoom muy sutil (inspira sensación de vida, sin agrandar de más) */
+    .hero-carousel__slide.is-active .hero-carousel__img--cover {
+      animation: heroCarouselCoverZoom 14s ease-in-out forwards;
+    }
+    @keyframes heroCarouselCoverZoom {
+      from { transform: scale(1); }
+      to   { transform: scale(1.04); }
+    }
+    /* Miniatura gestionada (novedad): recuadro centrado con tamaño, posición y
+       efecto 3D. El centrado usa la propiedad `translate` (no interfiere con
+       `transform`, que se reserva para la flotación del recuadro). */
+    .hero-carousel__flotador {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      translate: -50% -50%;
+      height: 74%;
+      max-width: 62%;
+      z-index: 1;
+      perspective: 1100px;
+    }
+    /* Tamaño de la miniatura (porcentaje del ancho del carrusel) */
+    .hero-carousel__flotador.tamano-pequeno   { max-width: 40%; }
+    .hero-carousel__flotador.tamano-mediano   { max-width: 60%; }
+    .hero-carousel__flotador.tamano-grande    { max-width: 80%; }
+    .hero-carousel__flotador.tamano-completo  { max-width: 100%; }
+    /* Alineación vertical de la miniatura */
+    .hero-carousel__flotador.posicion-top     { top: 6%; translate: -50% 0; }
+    .hero-carousel__flotador.posicion-bottom  { top: auto; bottom: 6%; translate: -50% 0; }
+    /* Alineación horizontal de la miniatura */
+    .hero-carousel__flotador.posicion-h-left  { left: clamp(1rem, 4vw, 3rem); translate: 0 -50%; }
+    .hero-carousel__flotador.posicion-h-right { left: auto; right: clamp(1rem, 4vw, 3rem); translate: 0 -50%; }
+    /* Esquinas: se combinan ambas alineaciones (sin compensación de centrado) */
+    .hero-carousel__flotador.posicion-top.posicion-h-left .hero-carousel__img,
+    .hero-carousel__flotador.posicion-top.posicion-h-right .hero-carousel__img,
+    .hero-carousel__flotador.posicion-bottom.posicion-h-left .hero-carousel__img,
+    .hero-carousel__flotador.posicion-bottom.posicion-h-right .hero-carousel__img { translate: 0 0; }
+    .hero-carousel__flotador.posicion-top.posicion-h-left,
+    .hero-carousel__flotador.posicion-top.posicion-h-right,
+    .hero-carousel__flotador.posicion-bottom.posicion-h-left,
+    .hero-carousel__flotador.posicion-bottom.posicion-h-right { translate: 0 0; }
+    /* Flotación muy sutil (sin acercamiento) del recuadro activo */
+    .hero-carousel__slide.is-active .hero-carousel__flotador {
+      animation: heroCarouselFloat 8s ease-in-out infinite;
+    }
+    @keyframes heroCarouselFloat {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-8px); }
+    }
+    /* La imagen dentro del recuadro ocupa todo su contenedor y gira en 3D */
+    .hero-carousel__flotador .hero-carousel__img {
+      position: static;
+      width: 100%;
+      height: 100%;
+      animation: none !important;
+      filter: drop-shadow(0 22px 34px rgba(0, 0, 0, .55));
+    }
+    .hero-carousel__img--3d {
+      transform: perspective(1100px) rotateY(13deg) rotateX(-3deg) rotateZ(-2.5deg);
+      transform-style: preserve-3d;
+      transition: transform .5s cubic-bezier(.16, 1, .3, 1);
+    }
+    .hero-carousel__flotador:hover .hero-carousel__img--3d {
+      transform: perspective(1100px) rotateY(0deg) rotateX(0deg) rotateZ(0deg);
+    }
+    /* Fondos alternativos alrededor de la miniatura (estilo_fondo).
+       El desenfocado (por defecto) simplemente deja el _blur_ visible. */
+    .hero-carousel__slide.fondo-negro { background: #000; }
+    .hero-carousel__slide.fondo-negro .hero-carousel__blur { display: none; }
+    .hero-carousel__slide.fondo-degradado { background: linear-gradient(180deg, #262626 0%, #000 92%); }
+    .hero-carousel__slide.fondo-degradado .hero-carousel__blur { display: none; }
+    .hero-carousel__overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to right, rgba(0,0,0,.82) 0%, rgba(0,0,0,.5) 45%, rgba(0,0,0,.3) 75%, rgba(0,0,0,.5) 100%);
+      z-index: 2;
+    }
+    .hero-carousel__content {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      text-align: left;
+      padding: 2rem 4rem;
+    }
+    .hero-carousel__inner {
+      max-width: 750px;
+    }
+    /* ── Etiqueta del carrusel (tags "inteligentes") ──
+       El tipo se deriva del texto en el template (|slugify): cada variante
+       —oferta, —promocion, —novedad, —general— recibe una identidad visual
+       propia. Filosofía: un solo elemento; pseudo-elementos como capas;
+       clip-path para formas; rotate (propiedad individual) sin pisar el
+       transform de la entrada escalonada. */
+    .hero-carousel__etiqueta {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .48rem 1.15rem;
+      margin-bottom: 1rem;
+      font-size: .78rem;
+      font-weight: 800;
+      font-family: 'Montserrat', 'Inter', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: .15em;
+      line-height: 1;
+      color: #fff;
+      background: rgba(230, 57, 70, .16);
+      border: 1px solid rgba(230, 57, 70, .55);
+      border-radius: 3rem;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      box-shadow: 0 6px 22px rgba(0,0,0,.35);
+    }
+    /* Punto luminoso de guía (lo conservan todas las variantes) */
+    .hero-carousel__etiqueta::before {
+      content: "";
+      flex-shrink: 0;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 0 0 0 rgba(255,255,255,.8);
+      animation: heroTagDot 1.8s ease-out infinite;
+    }
+    @keyframes heroTagDot {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,.8); }
+      70%      { box-shadow: 0 0 0 8px rgba(255,255,255,0); }
+    }
+    /* Destello que barre la etiqueta (lo enciende cada variante) */
+    .hero-carousel__etiqueta::after {
+      content: "";
+      position: absolute;
+      top: -20%;
+      bottom: -20%;
+      left: -70%;
+      width: 42%;
+      background: linear-gradient(100deg, transparent, rgba(255,255,255,.5), transparent);
+      transform: skewX(-22deg);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* — Oferta: etiqueta de precio con esquina recortada, tiltada y
+       con brillo + glow pulsante */
+    .hero-carousel__etiqueta--oferta {
+      padding-left: 1.4rem;
+      background: linear-gradient(135deg, #ff5d6c 0%, #E63946 55%, #c1121f 100%);
+      border: none;
+      clip-path: polygon(16px 0, 100% 0, 100% 100%, 16px 100%, 0 50%);
+      rotate: -2deg;
+      box-shadow: 0 8px 26px rgba(230, 57, 70, .55);
+      animation: heroOfertaPulse 2.2s ease-in-out infinite;
+    }
+    .hero-carousel__etiqueta--oferta::after { opacity: 1; animation: heroTagShine 2.8s ease-in-out infinite; }
+    @keyframes heroOfertaPulse {
+      0%, 100% { box-shadow: 0 8px 26px rgba(230,57,70,.5); }
+      50%      { box-shadow: 0 10px 34px rgba(230,57,70,.9); }
+    }
+
+    /* — Promoción: cinta de banner hexagonal con pliegues laterales
+       y franjas de luz finas en los bordes */
+    .hero-carousel__etiqueta--promocion {
+      padding: .5rem 1.55rem;
+      letter-spacing: .18em;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.18) 0 7%, transparent 7% 93%, rgba(255,255,255,.18) 93% 100%),
+        linear-gradient(90deg, #c1121f 0%, #E63946 30%, #ff6b70 50%, #E63946 70%, #c1121f 100%);
+      border: none;
+      clip-path: polygon(8% 0, 92% 0, 100% 50%, 92% 100%, 8% 100%, 0 50%);
+      box-shadow: 0 8px 24px rgba(193,18,31,.5);
+    }
+    .hero-carousel__etiqueta--promocion::after { opacity: 1; animation: heroTagShine 3.6s ease-in-out infinite; }
+
+    @keyframes heroTagShine {
+      0% { left: -70%; }
+      50%, 100% { left: 140%; }
+    }
+
+    /* — Novedad: píldora oscura con anillo doble (punteado + rojo),
+       punto dorado fijo y destello lento */
+    .hero-carousel__etiqueta--novedad {
+      overflow: hidden;
+      background: rgba(13, 27, 42, .62);
+      border: 1px dashed rgba(255,255,255,.6);
+      box-shadow:
+        inset 0 0 0 2px rgba(230, 57, 70, .65),
+        0 8px 24px rgba(0,0,0,.45);
+    }
+    .hero-carousel__etiqueta--novedad::before {
+      background: #ffd166;
+      box-shadow: 0 0 10px 0 rgba(255,209,102,.9);
+      animation: none;
+    }
+    .hero-carousel__etiqueta--novedad::after { opacity: 1; animation: heroTagShine 5s ease-in-out infinite; }
+
+    /* — Lanzamiento: píldora oscura con barra de lanzamiento
+       incandescente (degradado rojo→dorado) bajo el texto */
+    .hero-carousel__etiqueta--lanzamiento {
+      overflow: hidden;
+      padding-bottom: .68rem;
+      background: linear-gradient(120deg, #2b2b2b 0%, #0b0b0b 70%);
+      border: 1px solid rgba(230, 57, 70, .7);
+      box-shadow: 0 8px 24px rgba(0,0,0,.5);
+    }
+    .hero-carousel__etiqueta--lanzamiento::after {
+      opacity: 1;
+      top: auto;
+      bottom: 6px;
+      left: 12%;
+      right: 12%;
+      width: auto;
+      height: 3px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, #E63946, #ffd166 55%, #E63946);
+      transform: none;
+      animation: heroLanzBar 2.6s ease-in-out infinite;
+    }
+    @keyframes heroLanzBar {
+      0%, 100% { filter: drop-shadow(0 0 2px rgba(230, 57, 70, .8)); }
+      50%      { filter: drop-shadow(0 0 9px rgba(230, 57, 70, 1)); }
+    }
+    .hero-carousel__titulo {
+      font-family: 'Inter', sans-serif;
+      font-weight: 800;
+      font-size: 2.8rem;
+      color: #fff;
+      text-shadow: 0 2px 12px rgba(0,0,0,.4);
+      margin-bottom: .75rem;
+      line-height: 1.15;
+    }
+    .hero-carousel__subtitulo {
+      color: rgba(255,255,255,.88);
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+      text-shadow: 0 1px 6px rgba(0,0,0,.3);
+    }
+    .hero-carousel__btn {
+      display: inline-block;
+      background: #E63946;
+      color: #fff;
+      font-weight: 700;
+      font-size: .95rem;
+      padding: .7rem 2rem;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background .2s, transform .15s;
+      border: none;
+    }
+    .hero-carousel__btn:hover {
+      background: #c62d39;
+      color: #fff;
+      transform: translateY(-1px);
+    }
+    .hero-carousel__btn--outline {
+      background: transparent;
+      border: 2px solid rgba(255,255,255,.7);
+      color: #fff;
+    }
+    .hero-carousel__btn--outline:hover {
+      background: rgba(255,255,255,.15);
+      border-color: #fff;
+      color: #fff;
+    }
+    /* Entrada escalonada del contenido al activar cada diapositiva */
+    .hero-carousel__slide .hero-carousel__etiqueta,
+    .hero-carousel__slide .hero-carousel__titulo,
+    .hero-carousel__slide .hero-carousel__subtitulo,
+    .hero-carousel__slide .hero-carousel__btn {
+      opacity: 0;
+      transform: translateY(26px);
+      transition: opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1);
+    }
+    .hero-carousel__slide.is-active .hero-carousel__etiqueta { transition-delay: .18s; }
+    .hero-carousel__slide.is-active .hero-carousel__titulo { transition-delay: .28s; }
+    .hero-carousel__slide.is-active .hero-carousel__subtitulo { transition-delay: .38s; }
+    .hero-carousel__slide.is-active .hero-carousel__btn { transition-delay: .48s; }
+    .hero-carousel__slide.is-active .hero-carousel__btn:hover {
+      transition: background .2s, transform .15s;
+      transition-delay: 0s;
+    }
+    .hero-carousel__slide.is-active .hero-carousel__etiqueta,
+    .hero-carousel__slide.is-active .hero-carousel__titulo,
+    .hero-carousel__slide.is-active .hero-carousel__subtitulo,
+    .hero-carousel__slide.is-active .hero-carousel__btn {
+      opacity: 1;
+      transform: none;
+    }
+    .hero-carousel__arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      background: rgba(0,0,0,.45);
+      color: #fff;
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      font-size: 1.3rem;
+      cursor: pointer;
+      transition: background .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-carousel__arrow:hover {
+      background: rgba(230,57,70,.85);
+    }
+    .hero-carousel__arrow--prev { left: 1.2rem; }
+    .hero-carousel__arrow--next { right: 1.2rem; }
+    .hero-carousel__dots {
+      position: absolute;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      gap: .5rem;
+    }
+    .hero-carousel__dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.7);
+      background: transparent;
+      cursor: pointer;
+      padding: 0;
+      transition: background .2s, border-color .2s;
+    }
+    .hero-carousel__dot.is-active {
+      background: #E63946;
+      border-color: #E63946;
+    }
+    .hero-carousel__dot:hover {
+      border-color: #fff;
+    }
+    @media (max-width: 768px) {
+      .hero-carousel { height: 55vh; min-height: 360px; }
+      .hero-carousel__content { padding: 1.5rem; }
+      .hero-carousel__titulo { font-size: 1.8rem; }
+      .hero-carousel__subtitulo { font-size: .95rem; }
+      .hero-carousel__arrow { width: 38px; height: 38px; font-size: 1rem; }
+      .hero-carousel__arrow--prev { left: .6rem; }
+      .hero-carousel__arrow--next { right: .6rem; }
+      .hero-carousel__etiqueta { font-size: .7rem; padding: .42rem 1rem; }
+      .hero-carousel__flotador { height: 56%; max-width: 72%; }
+      .hero-carousel__flotador.posicion-h-left { left: 1.25rem; }
+      .hero-carousel__flotador.posicion-h-right { right: 1.25rem; }
+      .hero-carousel__img--3d { transform: perspective(1100px) rotateY(9deg) rotateZ(-2deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .hero-carousel__slide { transition: none; }
+      .hero-carousel__slide.is-active .hero-carousel__img--cover,
+      .hero-carousel__slide.is-active .hero-carousel__flotador { animation: none; }
+      .hero-carousel__flotador:hover .hero-carousel__img--3d { transition: none; }
+      .hero-carousel__slide .hero-carousel__etiqueta,
+      .hero-carousel__slide .hero-carousel__titulo,
+      .hero-carousel__slide .hero-carousel__subtitulo,
+      .hero-carousel__slide .hero-carousel__btn {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+      .hero-carousel__etiqueta,
+      .hero-carousel__etiqueta::before,
+      .hero-carousel__etiqueta::after { animation: none !important; }
+    }
+    </style>
+{% endblock %}
+
+{% block content %}
+    {# ── Carrusel de inicio ── #}
+    {% cache 300 hero-carousel carousel_cache_key %}{% if carousel_slides %}
+      <div class="hero-carousel" id="heroCarousel" aria-live="polite" aria-label="Carrusel de inicio">
+        {% for slide in carousel_slides %}
+          <div class="hero-carousel__slide{% if forloop.first %} is-active{% endif %} fondo-{{ slide.estilo_fondo|default:'blur' }}"
+               data-index="{{ forloop.counter0 }}"
+               {% if forloop.first %}aria-current="true"{% endif %}>
+            {% if slide.imagen %}
+              {% image slide.imagen width-1920 as slide_img %}
+              {% if slide.tipo == "banner" or slide.modo_efectivo == "completo" %}
+                {# Presentación principal y novedades 'completo': siempre pantalla completa #}
+                <img src="{{ slide_img.url }}"
+                     srcset="{{ slide_img.url }} 1920w"
+                     sizes="100vw"
+                     width="{{ slide_img.width }}"
+                     height="{{ slide_img.height }}"
+                     alt="{{ slide.titulo }}"
+                     class="hero-carousel__img hero-carousel__img--cover"
+                     loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                     {% if forloop.first %}fetchpriority="high"{% endif %}>
+              {% else %}
+                {# Novedad en miniatura: fondo desenfocado + imagen gestionable (tamaño/posición/3D) #}
+                <div class="hero-carousel__blur" style="background-image: url('{{ slide_img.url }}');" aria-hidden="true"></div>
+                <div class="hero-carousel__flotador
+                    tamano-{{ slide.tamano_miniatura|default:'mediano' }}
+                    posicion-{{ slide.posicion_vertical|default:'center' }}
+                    posicion-h-{{ slide.posicion_horizontal|default:'center' }}">
+                  <img src="{{ slide_img.url }}"
+                       srcset="{{ slide_img.url }} 1920w"
+                       sizes="100vw"
+                       width="{{ slide_img.width }}"
+                       height="{{ slide_img.height }}"
+                       alt="{{ slide.titulo }}"
+                       class="hero-carousel__img{% if slide.imagen.width >= 600 %} hero-carousel__img--3d{% endif %}"
+                       loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                       {% if forloop.first %}fetchpriority="high"{% endif %}>
+                </div>
+              {% endif %}
+            {% endif %}
+            <div class="hero-carousel__overlay"></div>
+            <div class="hero-carousel__content">
+              <div class="hero-carousel__inner">
+                {% if slide.etiqueta %}
+                  <span class="hero-carousel__etiqueta hero-carousel__etiqueta--{{ slide.etiqueta|slugify|default:'general' }}">{{ slide.etiqueta }}</span>
+                {% endif %}
+                <h1 class="hero-carousel__titulo">{{ slide.titulo }}</h1>
+                {% if slide.subtitulo %}
+                  <p class="hero-carousel__subtitulo">{{ slide.subtitulo }}</p>
+                {% endif %}
+                {% if slide.tipo == "banner" %}
+                  <div class="d-flex flex-wrap gap-3 mt-4">
+                    {% if slide.boton_texto and slide.boton_enlace %}
+                      <a href="{{ slide.boton_enlace }}" class="hero-carousel__btn">
+                        <i class="bi bi-gear me-2"></i>{{ slide.boton_texto }}
+                      </a>
+                    {% endif %}
+                    {% if slide.boton2_texto and slide.boton2_enlace %}
+                      <a href="{{ slide.boton2_enlace }}" class="hero-carousel__btn hero-carousel__btn--outline">
+                        <i class="bi bi-envelope me-2"></i>{{ slide.boton2_texto }}
+                      </a>
+                    {% endif %}
+                  </div>
+                {% else %}
+                  {% if slide.boton_texto and slide.boton_enlace %}
+                    <a href="{{ slide.boton_enlace }}" class="hero-carousel__btn">{{ slide.boton_texto }}</a>
+                  {% endif %}
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+
+        {% if carousel_total > 1 %}
+          <button class="hero-carousel__arrow hero-carousel__arrow--prev" aria-label="Diapositiva anterior">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+          <button class="hero-carousel__arrow hero-carousel__arrow--next" aria-label="Siguiente diapositiva">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+          <div class="hero-carousel__dots" role="tablist">
+            {% for _ in carousel_slides %}
+              <button class="hero-carousel__dot{% if forloop.first %} is-active{% endif %}"
+                      role="tab"
+                      aria-label="Ir a diapositiva {{ forloop.counter }}"
+                      aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                      data-index="{{ forloop.counter0 }}"></button>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}{% endcache %}
+
+    {# ── Hero original (se muestra si no hay carrusel) ── #}
+    {% if not carousel_slides %}
+      {% for block in page.hero %}
+          {% if block.block_type == 'hero' %}
+          <section id="inicio" class="hero-section">
+              {% if block.value.hero_image %}
+                  {% image block.value.hero_image fill-3840x2160 as hero_bg %}
+                  <div class="hero-bg" style="background-image:url('{{ hero_bg.url }}');"></div>
+              {% else %}
+                  <div class="hero-bg"></div>
+              {% endif %}
+              <div class="hero-overlay"></div>
+              <div class="container position-relative hero-content">
+                  <div class="row">
+                      <div class="col-lg-8">
+                          <h1 class="hero-title">{{ block.value.title|linebreaksbr }}</h1>
+                          <p class="hero-subtitle">{{ block.value.subtitle }}</p>
+                          <div class="d-flex flex-wrap gap-3 mt-4">
+                              <a href="{{ block.value.button_1_url }}" class="btn btn-accent btn-lg px-4">
+                                  <i class="bi bi-gear me-2"></i>{{ block.value.button_1_text }}
+                              </a>
+                              <a href="{{ block.value.button_2_url }}" class="btn btn-outline-light btn-lg px-4">
+                                  <i class="bi bi-envelope me-2"></i>{{ block.value.button_2_text }}
+                              </a>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </section>
+          {% endif %}
+      {% endfor %}
+    {% endif %}
+
+{% include "automotive/includes/portada_destacados.html" %}
+
+{% for block in page.about %}
+    {% if block.block_type == 'about' %}
+    <section id="nosotros" class="section bg-light">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-lg-6" data-reveal="left">
+                    <span class="section-tag">{{ block.value.section_tag }}</span>
+                    <h2 class="section-title">{{ block.value.title|linebreaksbr }}</h2>
+                </div>
+                <div class="col-lg-5 offset-lg-1 d-flex align-items-end" data-reveal="right">
+                    <p class="section-intro mb-0">{{ block.value.intro }}</p>
+                </div>
+            </div>
+
+            <div class="row align-items-center g-5 mb-5">
+                <div class="col-lg-6" data-reveal="left">
+                    {% if block.value.history_image %}
+                        {% image block.value.history_image fill-800x560 as hist_img %}
+                        <img src="{{ hist_img.url }}" alt="{{ block.value.history_title }}" class="img-fluid rounded-4 shadow-lg w-100 object-cover" loading="lazy" decoding="async">
+                    {% endif %}
+                </div>
+                <div class="col-lg-6" data-reveal="right">
+                    <h3 class="fw-bold mb-3">{{ block.value.history_title }}</h3>
+                    <div class="text-secondary mb-0">{{ block.value.history_text|safe }}</div>
+                </div>
+            </div>
+
+            {% if block.value.values %}
+            <div class="mvv-grid mb-6" data-reveal="fade">
+                {% for val in block.value.values %}
+                <div class="mvv-card">
+                    <div class="nv-card h-100">
+                        <div class="nv-icon"><i class="bi {{ val.icon }}"></i></div>
+                        <h6 class="fw-bold mb-1">{{ val.title }}</h6>
+                        <p class="small text-secondary mb-0">{{ val.text }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="stats-row" data-reveal="fade">
+                {% for stat in block.value.stats %}
+                    <div class="stat-item">
+                        <span class="stat-number" data-count="{{ stat.number }}">0</span><span class="stat-suffix">{{ stat.suffix }}</span>
+                        <span class="stat-label">{{ stat.label }}</span>
+                    </div>
+                    {% if not forloop.last %}<div class="stat-divider"></div>{% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+{% endfor %}
+
+{% for block in page.services %}
+    {% if block.block_type == 'services' %}
+    <section id="servicios" class="section">
+        <div class="container">
+            <div class="text-center mb-5" data-reveal="fade">
+                <span class="section-tag">{{ block.value.section_tag }}</span>
+                <h2 class="section-title mx-auto">{{ block.value.title|linebreaksbr }}</h2>
+                <p class="section-intro mx-auto">{{ block.value.intro }}</p>
+            </div>
+            <div class="row g-4">
+                {% for svc in block.value.services %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="service-card">
+                        <div class="service-icon"><i class="bi {{ svc.icon }}"></i></div>
+                        <h5 class="fw-bold">{{ svc.title }}</h5>
+                        <p class="text-secondary">{{ svc.description }}</p>
+                        <a href="{{ svc.link_url }}" class="service-link">{{ svc.link_text }} <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+{% endfor %}
+
+{% for block in page.gallery %}
+    {% if block.block_type == 'gallery' %}
+    <section id="galeria" class="section bg-dark text-white">
+        <div class="container">
+            <div class="text-center mb-5" data-reveal="fade">
+                <span class="section-tag tag-light">{{ block.value.section_tag }}</span>
+                <h2 class="section-title text-white mx-auto">{{ block.value.title|linebreaksbr }}</h2>
+            </div>
+            <div class="gallery-grid" data-reveal="fade">
+                {% for img in block.value.images %}
+                <div class="gallery-item gi-{{ forloop.counter }}" data-lightbox="{{ forloop.counter }}">
+                    {% image img.image fill-1200x800 as gal_img %}
+                    {% image img.image fill-1920x1440 as gal_full %}
+                    <img src="{{ gal_img.url }}" data-full="{{ gal_full.url }}" alt="{{ img.alt }}" loading="lazy" decoding="async">
+                    <div class="gallery-overlay"><i class="bi bi-plus-lg"></i></div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+{% endfor %}
+
+{% for block in page.location %}
+    {% if block.block_type == 'location' %}
+    <section id="acceso" class="section">
+        <div class="container">
+            <div class="row g-5 align-items-start">
+                <div class="col-lg-5" data-reveal="left">
+                    <span class="section-tag">{{ block.value.section_tag }}</span>
+                    <h2 class="section-title">{{ block.value.title|linebreaksbr }}</h2>
+                    <p class="text-secondary mb-4">{{ block.value.intro }}</p>
+                    <div class="info-list">
+                        {% for item in block.value.info_items %}
+                        <div class="info-item">
+                            <div class="info-icon"><i class="bi {{ item.icon }}"></i></div>
+                            <div>
+                                <h6 class="fw-bold mb-1">{{ item.title }}</h6>
+                                <p class="text-secondary mb-0">{{ item.text|linebreaksbr }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-lg-7" data-reveal="right">
+                    <div class="map-wrapper rounded-4 overflow-hidden shadow-lg">
+                        <div id="map" data-lat="{{ block.value.map_latitude }}" data-lng="{{ block.value.map_longitude }}"></div>
+                    </div>
+                    <div class="transport-info mt-3">
+                        <h6 class="fw-bold"><i class="bi bi-bus-front text-accent me-2"></i>{{ block.value.transport_title }}</h6>
+                        <p class="text-secondary small mb-0">{{ block.value.transport_text }}</p>
+                    </div>
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-accent" data-mapa-abrir-modal>
+                            <i class="bi bi-geo-alt me-2"></i>Ver mapa de dependencias
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+{% endfor %}
+
+{% for block in page.contact %}
+    {% if block.block_type == 'contact' %}
+    <section id="contacto" class="section bg-light">
+        <div class="container">
+            <div class="row g-5 align-items-start">
+                <div class="col-lg-5" data-reveal="left">
+                    <span class="section-tag">{{ block.value.section_tag }}</span>
+                    <h2 class="section-title">{{ block.value.title|linebreaksbr }}</h2>
+                    <p class="text-secondary mb-4">{{ block.value.intro }}</p>
+                    <div class="contact-channels">
+                        {% for ch in block.value.social_channels %}
+                        <a href="{{ ch.url }}" class="channel-card" target="_blank" rel="noopener">
+                            <div class="channel-icon {{ ch.color_class }}"><i class="bi {{ ch.icon }}"></i></div>
+                            <div>
+                                <h6 class="fw-bold mb-1">{{ ch.platform }}</h6>
+                                <p class="text-secondary small mb-0">{{ ch.handle }}</p>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-lg-7" data-reveal="right">
+                    <div class="contact-form-card">
+                        <div class="form-success" id="formSuccess">
+                            <div class="success-icon"><i class="bi bi-check-lg"></i></div>
+                            <h5 class="fw-bold">¡Mensaje enviado!</h5>
+                            <p class="text-secondary">Gracias por contactarnos. Nos pondremos en contacto contigo a la brevedad.</p>
+                            <button class="btn btn-outline-accent" onclick="resetForm()">Enviar otro mensaje</button>
+                        </div>
+                        <form id="contactForm" class="contact-form" novalidate>
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <label for="nombre" class="form-label fw-semibold">Nombre completo *</label>
+                                    <input type="text" class="form-control" id="nombre" name="nombre" required placeholder="Ej. Juan Pérez">
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label for="email" class="form-label fw-semibold">Correo electrónico *</label>
+                                    <input type="email" class="form-control" id="email" name="email" required placeholder="correo@ejemplo.com">
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label for="telefono" class="form-label fw-semibold">Teléfono</label>
+                                    <input type="tel" class="form-control" id="telefono" name="telefono" placeholder="+52 (55) 0000-0000">
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label for="servicio" class="form-label fw-semibold">Servicio de interés *</label>
+                                    <select class="form-select" id="servicio" name="servicio" required>
+                                        <option value="" selected disabled>Selecciona un servicio</option>
+                                        <option value="venta">Venta de vehículos</option>
+                                        <option value="mantenimiento">Mantenimiento preventivo</option>
+                                        <option value="reparacion">Reparación integral</option>
+                                        <option value="diagnostico">Diagnóstico computarizado</option>
+                                        <option value="grua">Grúa y asistencia vial</option>
+                                        <option value="repuestos">Repuestos y accesorios</option>
+                                        <option value="otro">Otro</option>
+                                    </select>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                                <div class="col-12">
+                                    <label for="mensaje" class="form-label fw-semibold">Mensaje *</label>
+                                    <textarea class="form-control" id="mensaje" name="mensaje" rows="5" required placeholder="Describe tu necesidad o consulta..."></textarea>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                                <div class="d-none" aria-hidden="true">
+                                    <label>No llenar</label>
+                                    <input type="text" name="website" tabindex="-1" autocomplete="off">
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-accent btn-lg w-100" id="submitBtn">
+                                        <i class="bi bi-send me-2"></i>Enviar mensaje
+                                    </button>
+                                    <p class="text-secondary small mt-2 mb-0">* Campos obligatorios. Respetamos tu privacidad.</p>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+{% endfor %}
+
+{% for block in page.footer %}
+    {% if block.block_type == 'footer' %}
+    <footer class="footer">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <div class="col-lg-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        {% for block in page.logo %}
+                          {% image block.value fill-40x40 as logo_img %}
+                          <img src="{{ logo_img.url }}" alt="Logo" class="brand-logo">
+                        {% empty %}
+                          <span class="brand-icon">SA</span>
+                        {% endfor %}
+                        <span class="fw-bold fs-5">Servicios Automotores S.A</span>
+                    </div>
+                    <p class="text-secondary mb-4">{{ block.value.description }}</p>
+                    <div class="social-links">
+                        {% for sl in block.value.social_links %}
+                        <a href="{{ sl.url }}" class="social-link" aria-label="{{ sl.platform }}" target="_blank" rel="noopener"><i class="bi {{ sl.icon }}"></i></a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% for col in block.value.columns %}
+                <div class="col-6 col-lg-2">
+                    <h6 class="fw-bold text-white mb-3">{{ col.title }}</h6>
+                    <ul class="footer-links">
+                        {% for link in col.links %}
+                        <li><a href="{{ link.url }}">{{ link.text }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="footer-bottom">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <p class="mb-0">{{ block.value.copyright_text }}</p>
+                    <div class="d-flex align-items-center gap-3">
+                        <a href="#mainNav" class="footer-idioma-link"
+                           onclick="window.scrollTo({top:0,behavior:'smooth'});var s=document.getElementById('langSelector');if(s){s.classList.add('is-open');var t=s.querySelector('.lang-select__toggle');if(t){t.setAttribute('aria-expanded','true');t.focus();}} return true;"
+                           aria-label="Cambiar idioma del sitio">
+                          <i class="bi bi-translate" aria-hidden="true"></i> Idioma
+                        </a>
+                        {% if block.value.registration_number %}
+                            <span class="small opacity-75">{{ block.value.registration_number }}</span>
+                        {% endif %}
+                        {% if block.value.country_brand_logo %}
+                            {% image block.value.country_brand_logo fill-60x60 as brand_logo %}
+                            <img src="{{ brand_logo.url }}" alt="Marca País" class="footer-brand-logo">
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    {% endif %}
+{% endfor %}
+
+{% comment %} Botón de WhatsApp desactivado temporalmente
+<a href="https://wa.me/525512345678" class="whatsapp-float" target="_blank" rel="noopener"
+   aria-label="Contactar por WhatsApp">
+    <i class="bi bi-whatsapp"></i>
+</a>
+{% endcomment %}
+
+<button id="backToTop" class="back-to-top" aria-label="Volver arriba">
+    <i class="bi bi-chevron-up"></i>
+</button>
+
+<div class="lightbox" id="lightbox">
+    <button class="lightbox-close" aria-label="Cerrar">&times;</button>
+    <img src="" alt="" id="lightboxImg">
+    <button class="lightbox-prev" aria-label="Anterior"><i class="bi bi-chevron-left"></i></button>
+    <button class="lightbox-next" aria-label="Siguiente"><i class="bi bi-chevron-right"></i></button>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var carousel = document.getElementById("heroCarousel");
+  if (!carousel) return;
+  var slides = carousel.querySelectorAll(".hero-carousel__slide");
+  var dots = carousel.querySelectorAll(".hero-carousel__dot");
+  var prevBtn = carousel.querySelector(".hero-carousel__arrow--prev");
+  var nextBtn = carousel.querySelector(".hero-carousel__arrow--next");
+  var total = slides.length;
+  var current = 0;
+  var interval = null;
+  var DELAY = 5000;
+  var paused = false;
+
+  function goTo(index) {
+    if (index < 0) index = total - 1;
+    if (index >= total) index = 0;
+    slides[current].classList.remove("is-active");
+    slides[current].removeAttribute("aria-current");
+    if (dots[current]) { dots[current].classList.remove("is-active"); dots[current].setAttribute("aria-selected", "false"); }
+    current = index;
+    slides[current].classList.add("is-active");
+    slides[current].setAttribute("aria-current", "true");
+    if (dots[current]) { dots[current].classList.add("is-active"); dots[current].setAttribute("aria-selected", "true"); }
+  }
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+  function startAuto() { stopAuto(); if (!paused && total > 1) interval = setInterval(next, DELAY); }
+  function stopAuto() { if (interval) { clearInterval(interval); interval = null; } }
+
+  if (prevBtn) prevBtn.addEventListener("click", function () { prev(); startAuto(); });
+  if (nextBtn) nextBtn.addEventListener("click", function () { next(); startAuto(); });
+  dots.forEach(function (dot) {
+    dot.addEventListener("click", function () { goTo(parseInt(this.dataset.index, 10)); startAuto(); });
+  });
+  carousel.addEventListener("mouseenter", function () { paused = true; stopAuto(); });
+  carousel.addEventListener("mouseleave", function () { paused = false; startAuto(); });
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) paused = true;
+  carousel.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowLeft") { prev(); startAuto(); }
+    if (e.key === "ArrowRight") { next(); startAuto(); }
+  });
+  var touchStartX = 0;
+  carousel.addEventListener("touchstart", function (e) { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+  carousel.addEventListener("touchend", function (e) {
+    var diff = touchStartX - e.changedTouches[0].screenX;
+    if (Math.abs(diff) > 50) { if (diff > 0) next(); else prev(); startAuto(); }
+  }, { passive: true });
+  startAuto();
+})();
+</script>
+
+{% endblock %}

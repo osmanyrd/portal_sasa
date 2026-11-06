@@ -1,0 +1,67 @@
+{% load static wagtailcore_tags %}
+{% if info_mostrar_cartel %}
+<li class="nav-item ms-lg-1 info-bell-item">
+  <div class="info-bell" data-info-bell>
+    <button
+      type="button"
+      class="info-bell__btn"
+      data-info-bell-btn
+      aria-expanded="false"
+      aria-haspopup="true"
+      aria-controls="infoBellPanel"
+      aria-label="Notificaciones de informaciones: {{ info_conteo }} recientes">
+      <i class="bi bi-bell-fill" aria-hidden="true"></i>
+      {% if info_conteo %}
+        <span class="info-bell__badge" aria-hidden="true">{{ info_conteo }}</span>
+      {% endif %}
+    </button>
+
+    <div class="info-bell__panel" id="infoBellPanel" data-info-bell-panel hidden>
+      <div class="info-bell__header">
+        <span class="info-bell__title">
+          <i class="bi bi-bell-fill" aria-hidden="true"></i> Notificaciones
+        </span>
+        <span class="info-bell__count">{{ info_conteo }} reciente{{ info_conteo|pluralize }}</span>
+      </div>
+
+      <ul class="info-bell__list">
+        {% for info in info_recientes %}
+        <li>
+          <a href="{{ info.url }}" class="info-bell__item">
+            <span class="info-bell__icon" aria-hidden="true">
+              {% if info.categoria == 'novedad' %}<i class="bi bi-stars"></i>
+              {% elif info.tipo == 'alerta' %}<i class="bi bi-exclamation-triangle-fill"></i>
+              {% elif info.tipo == 'comunicado' %}<i class="bi bi-envelope-paper-fill"></i>
+              {% elif info.tipo == 'noticia' %}<i class="bi bi-newspaper"></i>
+              {% else %}<i class="bi bi-megaphone-fill"></i>{% endif %}
+            </span>
+            <span class="info-bell__text">
+              <span class="info-bell__name">{{ info.titulo }}</span>
+              <span class="info-bell__meta">
+                <span class="info-bell__tipo">
+                  {% if info.categoria == 'novedad' %}Novedad
+                  {% elif info.tipo == 'alerta' %}Alerta
+                  {% elif info.tipo == 'comunicado' %}Comunicado
+                  {% elif info.tipo == 'noticia' %}Noticia
+                  {% else %}Aviso{% endif %}
+                </span>
+                <span class="info-bell__fecha">{{ info.fecha|date:"d M Y" }}</span>
+              </span>
+            </span>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <div class="info-bell__footer">
+        <a class="info-bell__ver-todas" href="{{ novedades_indice_url }}">
+          Ver novedades <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </a>
+        <a class="info-bell__ver-todas" href="{{ info_indice_url }}">
+          Ver informaciones <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</li>
+{% endif %}

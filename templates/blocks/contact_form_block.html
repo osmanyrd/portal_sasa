@@ -1,0 +1,13 @@
+<section class="{{ design_classes }}">
+    <div class="container">
+        <div class="mx-auto contact-card bg-white rounded-4 shadow-sm p-4 p-lg-5">
+            {% if value.heading %}
+                <h2 class="display-6 fw-bold mb-2">{{ value.heading }}</h2>
+            {% endif %}
+            {% if value.text %}
+                <p class="lead text-secondary mb-4">{{ value.text|linebreaksbr }}</p>
+            {% endif %}
+            {% include "core/includes/contact_form.html" with form=contact_form %}
+        </div>
+    </div>
+</section>

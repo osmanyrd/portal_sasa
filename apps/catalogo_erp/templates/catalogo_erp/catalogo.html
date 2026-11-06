@@ -1,0 +1,141 @@
+{% extends "automotive/base_automotive.html" %}
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block title %}{{ page.title }} | Servicios Automotores S.A{% endblock %}
+{% block meta_description %}Consulta la disponibilidad de nuestros productos en el ERP por categoría.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'catalogo_erp/css/catalog-erp.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="catalog-hero-wrap">
+  <div class="catalog-hero-wrap__bg" aria-hidden="true"></div>
+  <div class="container catalog-hero">
+    <span class="section-tag">Catálogo</span>
+    <h1 class="catalog-hero__title fw-bold mt-2 mb-3">{{ page.title }}</h1>
+    {% if page.introduccion %}
+      <div class="catalog-hero__intro rich-text">{{ page.introduccion|richtext }}</div>
+    {% endif %}
+    <p class="catalog-hero__intro mt-2 mb-0" style="font-size:.95rem;opacity:.85;">
+      Seleccioná una categoría para consultar la disponibilidad actual en nuestras dependencias.
+    </p>
+  </div>
+</div>
+
+<section class="container py-5"
+         data-catalogo-erp
+         data-api-url="{% url 'catalogo_erp_buscar' %}"
+         {% if not categorias %}data-vacio="1"{% endif %}>
+
+  {% if categorias %}
+    <div class="catalogo-erp-grid">
+      {% for categoria in categorias %}
+        <button type="button"
+                class="catalogo-erp-cat"
+                data-abrir-modal
+                data-categoria-id="{{ categoria.pk }}"
+                data-categoria-nombre="{{ categoria.nombre }}"
+                data-metodo="{{ categoria.metodo_busqueda }}"
+                data-ayuda="{{ categoria.ayuda_busqueda }}"
+                aria-label="Consultar disponibilidad de {{ categoria.nombre }}">
+          <div class="catalogo-erp-cat__img-wrap">
+            {% if categoria.imagen %}
+              {% image categoria.imagen fill-600x400 as cat_img %}
+              <img src="{{ cat_img.url }}" alt="{{ categoria.nombre }}" loading="lazy"
+                   width="{{ cat_img.width }}" height="{{ cat_img.height }}">
+            {% else %}
+              <div class="catalogo-erp-cat__sin-foto" aria-hidden="true">
+                <i class="bi bi-box-seam"></i>
+              </div>
+            {% endif %}
+          </div>
+          <div class="catalogo-erp-cat__cuerpo">
+            <h2 class="catalogo-erp-cat__titulo">{{ categoria.nombre }}</h2>
+            {% if categoria.descripcion %}
+              <p class="catalogo-erp-cat__desc">{{ categoria.descripcion|truncatechars:110 }}</p>
+            {% endif %}
+            <span class="catalogo-erp-cat__cta">
+              Consultar disponibilidad <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </span>
+          </div>
+        </button>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="catalogo-erp-vacio text-center py-5">
+      <i class="bi bi-database-slash display-4" aria-hidden="true"></i>
+      <h2 class="h4 mt-3">El catálogo no tiene categorías</h2>
+      <p class="text-secondary">El administrador debe crear las categorías de productos en el panel.</p>
+    </div>
+  {% endif %}
+</section>
+
+{# ── Modal de consulta de disponibilidad ── #}
+<div class="modal fade" id="catalogoErpModal" tabindex="-1"
+     role="dialog" aria-modal="true" aria-labelledby="catalogoErpModalTitulo">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content catalogo-erp__modal">
+      <div class="modal-header catalogo-erp__modal-head">
+        <h2 class="modal-title h5 mb-0" id="catalogoErpModalTitulo">
+          <i class="bi bi-box-seam" aria-hidden="true"></i> <span id="catalogoErpModalCat"></span>
+        </h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body p-0">
+        <div class="catalogo-erp__consulta">
+          <p class="catalogo-erp__ayuda mb-3" id="catalogoErpAyuda"></p>
+
+          <form id="catalogoErpForm" class="catalogo-erp__form" autocomplete="off" novalidate>
+            <div class="row g-2">
+              <div class="col-12 col-md-4">
+                <label for="catalogoErpProvincia" class="catalogo-erp__label">
+                  Provincia <span class="catalogo-erp__obligatorio" aria-hidden="true">*</span>
+                </label>
+                <select id="catalogoErpProvincia" name="provincia" class="form-select" required>
+                  <option value="">Elegí una provincia…</option>
+                  {% for provincia in provincias %}
+                    <option value="{{ provincia.codigo }}"{% if provincia_actual and provincia.codigo == provincia_actual.codigo %} selected{% endif %}>{{ provincia.nombre }}</option>
+                  {% endfor %}
+                </select>
+                <div class="form-text">Define dónde se busca el stock.</div>
+              </div>
+              <div class="col-12 col-md-8">
+                <label for="catalogoErpTermino" class="catalogo-erp__label">
+                  Código o descripción <span class="catalogo-erp__obligatorio" aria-hidden="true">*</span>
+                </label>
+                <input type="search" id="catalogoErpTermino" name="q" class="form-control"
+                       placeholder="Ej.: 185, 12V60, 20W-50" autocomplete="off" required>
+                <div class="form-text">El mismo texto busca en el código y en la descripción.</div>
+              </div>
+            </div>
+            <div class="mt-3">
+              <button type="submit" class="btn btn-accent w-100" id="catalogoErpBuscar">
+                <i class="bi bi-search me-1" aria-hidden="true"></i> Buscar
+              </button>
+            </div>
+          </form>
+
+          <div class="catalogo-erp__loader d-none my-4 text-center" id="catalogoErpLoader">
+            <div class="spinner-border text-danger" role="status" aria-hidden="true"></div>
+            <div class="mt-2 text-secondary small">Consultando el sistema…</div>
+          </div>
+
+          <div class="catalogo-erp__error d-none my-3" id="catalogoErpError" role="alert"></div>
+
+          <div class="catalogo-erp__resultados" id="catalogoErpResultados"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-accent btn-sm" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'catalogo_erp/js/catalog-erp.js' %}" defer></script>
+{% endblock %}

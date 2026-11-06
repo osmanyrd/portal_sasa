@@ -1,0 +1,18 @@
+{% comment %}
+Ítem unitario de la cinta de informaciones.
+Recibe: info (InformacionCinta), config (ConfiguracionCinta vía contexto).
+{% endcomment %}
+{% if config.mostrar_iconos %}
+  <i class="bi {{ info.etiqueta_tipo }} cinta-info__icon" aria-hidden="true"></i>
+{% endif %}
+{% if info.enlace %}
+  <a
+    class="cinta-info__link"
+    href="{{ info.enlace }}"
+    target="_blank"
+    rel="noopener noreferrer"
+    style="color: {{ info.color_texto }};"
+  >{{ info.texto }}</a>
+{% else %}
+  <span class="cinta-info__texto" style="color: {{ info.color_texto }};">{{ info.texto }}</span>
+{% endif %}

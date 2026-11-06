@@ -1,0 +1,727 @@
+/* ── Surveys System CSS ─────────────────────────────────────── */
+
+/* ── Campanita del navbar (encuestas pendientes) ────────────── */
+.survey-bell-item { position: relative; }
+.survey-bell__btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, .18);
+  background: rgba(255, 255, 255, .07);
+  color: #fff;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+}
+.survey-bell__btn:hover,
+.survey-bell__btn[aria-expanded="true"] {
+  background: var(--accent, #E63946);
+  border-color: var(--accent, #E63946);
+}
+.survey-bell__badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 50px;
+  background: #fff;
+  color: var(--accent, #E63946);
+  font-size: .68rem;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  border: 2px solid #0c0c0c;
+  transform: translate(15%, -15%);
+}
+.survey-bell__btn:hover .survey-bell__badge,
+.survey-bell__btn[aria-expanded="true"] .survey-bell__badge {
+  background: #fff;
+  color: var(--accent, #E63946);
+}
+
+/* Pildora "Encuesta nueva" (aviso temporal junto a la campana) */
+.survey-bell__nueva {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .28rem .65rem;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #E63946, #C1121F);
+  color: #fff;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+  box-shadow: 0 6px 18px rgba(230, 57, 70, .45);
+  white-space: nowrap;
+  transform-origin: top right;
+  animation: surveyNuevaIn .55s cubic-bezier(.16, 1, .3, 1) both;
+  z-index: 2;
+  cursor: default;
+}
+.survey-bell__nueva[hidden] { display: none; }
+.survey-bell__nueva-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff;
+  animation: surveyNuevaDot 1.4s ease-in-out infinite;
+}
+.survey-bell__nueva-close {
+  margin-left: .1rem;
+  padding: 0 .15rem;
+  font-size: 1rem;
+  line-height: 1;
+  opacity: .85;
+  cursor: pointer;
+  transition: transform .2s, opacity .2s;
+}
+.survey-bell__nueva-close:hover {
+  opacity: 1;
+  transform: scale(1.25);
+}
+.survey-bell__nueva--leaving { animation: surveyNuevaOut .35s ease forwards; }
+@keyframes surveyNuevaIn {
+  0%   { opacity: 0; transform: translateY(8px) scale(.4) rotate(-8deg); }
+  60%  { opacity: 1; transform: translateY(-3px) scale(1.12) rotate(3deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+}
+@keyframes surveyNuevaOut {
+  to { opacity: 0; transform: translateY(-10px) scale(.6); }
+}
+@keyframes surveyNuevaDot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.4); opacity: .6; }
+}
+/* En movil la campana es full-width: la pildora va arriba a la derecha del boton */
+@media (max-width: 991.98px) {
+  .survey-bell__nueva {
+    top: 50%;
+    right: .5rem;
+    transform-origin: right center;
+    animation-name: surveyNuevaInMobile;
+  }
+  .survey-bell__nueva--leaving { animation-name: surveyNuevaOutMobile; }
+  @keyframes surveyNuevaInMobile {
+    0%   { opacity: 0; transform: translateX(12px) scale(.6); }
+    100% { opacity: 1; transform: translateX(0) scale(1); }
+  }
+  @keyframes surveyNuevaOutMobile {
+    to { opacity: 0; transform: translateX(12px) scale(.6); }
+  }
+  .survey-bell__nueva-dot { display: none; }
+}
+.survey-bell__panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 340px;
+  max-width: calc(100vw - 2rem);
+  background: #fff;
+  color: var(--dark-2, #222);
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: var(--shadow-lg, 0 20px 60px rgba(0, 0, 0, .25));
+  overflow: hidden;
+  z-index: 1050;
+}
+.survey-bell__panel[hidden] { display: none; }
+.survey-bell__panel:not([hidden]) {
+  animation: bellPanelIn .24s cubic-bezier(.16, 1, .3, 1);
+  transform-origin: top right;
+}
+@keyframes bellPanelIn {
+  from { opacity: 0; transform: translateY(-6px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.survey-bell__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .9rem 1.1rem;
+  background: var(--dark, #000);
+  color: #fff;
+}
+.survey-bell__title { font-weight: 600; font-size: .95rem; }
+.survey-bell__title i { color: var(--accent, #E63946); margin-right: .35rem; }
+.survey-bell__count { font-size: .78rem; color: rgba(255, 255, 255, .65); }
+.survey-bell__body { padding: 1rem 1.1rem; }
+.survey-bell__title-enc {
+  font-weight: 700;
+  font-size: .95rem;
+  margin: 0 0 .35rem;
+  color: var(--text-primary, var(--dark-2, #212529));
+}
+.survey-bell__desc {
+  color: var(--text-secondary, var(--gray-mid, #6c757d));
+  font-size: .85rem;
+  line-height: 1.45;
+  margin: 0;
+}
+.survey-bell__responder {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .85rem 1.1rem;
+  font-weight: 600;
+  font-size: .9rem;
+  color: var(--accent, #E63946);
+  text-decoration: none;
+  border-top: 1px solid var(--border-color, var(--gray-light, #e9ecef));
+  transition: background .2s;
+}
+.survey-bell__responder:hover { background: var(--gray, #f1f3f5); color: var(--accent-dark, #C1121F); }
+/* ── Multi-item: una entrada por encuesta pendiente ─────────── */
+.survey-bell__item {
+  padding: .9rem 1.1rem;
+  border-bottom: 1px solid var(--border-color, var(--gray-light, #e9ecef));
+}
+.survey-bell__item:last-child { border-bottom: 0; }
+.survey-bell__item .survey-bell__title-enc { margin-bottom: .25rem; }
+.survey-bell__tipo {
+  display: inline-block;
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: .15rem .5rem;
+  border-radius: 50px;
+  margin: .35rem 0 .5rem;
+}
+.survey-bell__tipo-campana { background: rgba(230,57,70,.12); color: var(--accent, #E63946); }
+.survey-bell__tipo-fija { background: rgba(13,110,253,.12); color: #0d6efd; }
+@media (max-width: 991.98px) {
+  .survey-bell__panel { right: -1.25rem; }
+}
+
+/* ── Modo oscuro: paneles de encuestas (campana y flotante) ── */
+[data-theme="dark"] .survey-bell__panel,
+[data-theme="dark"] .survey-float__panel,
+body.dark-mode .survey-bell__panel,
+body.dark-mode .survey-float__panel {
+  background: var(--bg-secondary, #1E1E1E);
+  color: var(--text-primary, #F5F5F5);
+}
+[data-theme="dark"] .survey-bell__responder:hover,
+body.dark-mode .survey-bell__responder:hover {
+  background: rgba(255, 255, 255, .06);
+}
+
+/* ── Botón flotante de encuesta pendiente ──────────────────── */
+/* Columna inferior derecha (apilado): chatbot -> mapa -> encuestas.
+   La encuesta es el boton mas bajo; z-index alto para no quedar detras.
+   Es un wrapper fijo: al pulsarlo abre un panel con las encuestas
+   disponibles (estilo campana) para elegir cuál responder. */
+.survey-float {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 4600;
+  width: 60px;
+  height: 60px;
+}
+.survey-float__btn {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: none;
+  display: grid;
+  place-items: center;
+  background: var(--accent, #E63946);
+  color: #fff;
+  font-size: 1.6rem;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(230, 57, 70, .4);
+  transition: transform var(--transition, .3s), box-shadow var(--transition, .3s);
+  animation: surveyFloatIn .45s cubic-bezier(.16, 1, .3, 1);
+}
+@keyframes surveyFloatIn {
+  from { opacity: 0; transform: translateY(12px) scale(.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.survey-float__btn:hover,
+.survey-float__btn[aria-expanded="true"] {
+  transform: scale(1.08);
+  box-shadow: 0 6px 28px rgba(230, 57, 70, .55);
+  color: #fff;
+}
+.survey-float__btn:focus-visible {
+  outline: 3px solid var(--accent, #E63946);
+  outline-offset: 3px;
+}
+.survey-float__btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: surveyFloatPing 2.6s ease-out infinite;
+}
+.survey-float__btn[aria-expanded="true"]::after {
+  animation: none;
+  opacity: 0;
+}
+@keyframes surveyFloatPing {
+  0%   { box-shadow: 0 0 0 0 rgba(230, 57, 70, .4); }
+  70%  { box-shadow: 0 0 0 16px rgba(230, 57, 70, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(230, 57, 70, 0); }
+}
+.survey-float__badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  border-radius: 50px;
+  background: #fff;
+  color: var(--accent, #E63946);
+  font-size: .75rem;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--accent, #E63946);
+}
+
+/* ── Panel del botón flotante (lista de encuestas) ─────────── */
+.survey-float__panel {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  right: 0;
+  width: 340px;
+  max-width: calc(100vw - 2rem);
+  max-height: min(420px, calc(100vh - 12rem));
+  overflow-y: auto;
+  background: #fff;
+  color: var(--dark-2, #222);
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: var(--shadow-lg, 0 20px 60px rgba(0, 0, 0, .25));
+  z-index: 4700;
+}
+.survey-float__panel[hidden] { display: none; }
+.survey-float__panel:not([hidden]) {
+  animation: bellPanelIn .24s cubic-bezier(.16, 1, .3, 1);
+  transform-origin: bottom right;
+}
+.survey-float__body { padding: .35rem 0; }
+/* Header del panel con botón de cierre (X) */
+.survey-float__header { display: flex; align-items: center; gap: .6rem; }
+.survey-float__header .survey-bell__count { margin-left: auto; margin-right: .15rem; }
+.survey-bell__close {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(255, 255, 255, .65);
+  font-size: .85rem;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  transition: background .2s, color .2s, transform .2s;
+}
+.survey-bell__close:hover {
+  background: var(--accent, #E63946);
+  color: #fff;
+  transform: scale(1.08);
+}
+.survey-bell__close:active { transform: scale(.95); }
+
+/* El boton de "volver arriba" compartía esquina con la encuesta; ahora la
+   columna derecha es: survey -> whatsapp -> mapa -> chatbot, y el botón de
+   "volver arriba" se sube por encima de la cima de la columna para no
+   solaparse cuando hay encuesta disponible. */
+body:has(.survey-float) .back-to-top {
+  bottom: calc(14.75rem + 3.75rem + 0.75rem);
+}
+@media (max-width: 575.98px) {
+  .survey-float {
+    bottom: 1.25rem;
+    right: 1.25rem;
+    width: 54px;
+    height: 54px;
+  }
+  .survey-float { bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)); }
+  .survey-float__btn { font-size: 1.45rem; }
+  .survey-float__panel {
+    width: 280px;
+    max-width: calc(100vw - 2.5rem);
+    max-height: min(420px, calc(100vh - 16rem));
+  }
+  body:has(.survey-float) .back-to-top {
+    bottom: calc(10.75rem + 3.375rem + 0.75rem);
+  }
+}
+
+/* ── Modal ──────────────────────────────────────────────────── */
+.survey-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  padding: 1rem;
+  backdrop-filter: blur(2px);
+}
+.survey-modal-overlay.is-leaving {
+  opacity: 0;
+}
+.survey-modal-overlay.is-leaving .survey-modal {
+  animation: surveyModalOut 0.35s ease forwards;
+}
+
+.survey-modal {
+  background: #fff;
+  border-radius: 16px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  animation: surveyModalSlideIn 0.5s cubic-bezier(.16, 1, .3, 1) both;
+  transform-origin: center;
+}
+
+@keyframes surveyModalSlideIn {
+  0%   { transform: translateY(36px) scale(.92); opacity: 0; }
+  60%  { transform: translateY(-4px) scale(1.02); opacity: 1; }
+  100% { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+@keyframes surveyModalOut {
+  to { transform: translateY(24px) scale(.92); opacity: 0; }
+}
+
+.survey-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.survey-modal-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+  color: #212529;
+}
+
+.survey-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.survey-modal-close:hover {
+  color: #dc3545;
+}
+
+.survey-modal-body {
+  padding: 1.5rem;
+}
+
+.survey-modal-desc {
+  color: #495057;
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+.survey-modal-invite {
+  color: #6c757d;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.survey-modal-footer {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem 1.5rem;
+  justify-content: flex-end;
+}
+
+.survey-modal-btn {
+  padding: 0.6rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.survey-modal-btn-skip {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.survey-modal-btn-skip:hover {
+  background: #dee2e6;
+}
+
+.survey-modal-btn-accept {
+  background: var(--accent, #E63946);
+  color: #fff;
+}
+
+.survey-modal-btn-accept:hover {
+  background: var(--accent-dark, #C1121F);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 2rem rgba(230, 57, 70, .35);
+}
+
+/* ── Form page ──────────────────────────────────────────────── */
+.survey-card {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.survey-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--accent, #E63946);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+}
+
+.survey-title {
+  font-weight: 800;
+  color: #212529;
+}
+
+.survey-desc {
+  font-size: 1.05rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.survey-alert {
+  border-radius: 10px;
+  border: none;
+  padding: 0.85rem 1.25rem;
+}
+
+.survey-question {
+  padding: 1.25rem;
+  border-radius: 12px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  transition: border-color 0.2s;
+}
+
+.survey-question:focus-within {
+  border-color: var(--accent, #E63946);
+}
+
+.survey-question-label {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: #212529;
+}
+
+.survey-question-number {
+  color: var(--accent, #E63946);
+  font-weight: 800;
+  margin-right: 0.35rem;
+}
+
+.survey-question-options label {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-bottom: 0.25rem;
+}
+
+.survey-question-options label:hover {
+  background: #e9ecef;
+}
+
+.survey-question-options input[type="radio"],
+.survey-question-options input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+/* ── Buttons ────────────────────────────────────────────────── */
+.survey-btn-primary {
+  background: var(--accent, #E63946);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.survey-btn-primary:hover {
+  background: var(--accent-dark, #C1121F);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 2rem rgba(230, 57, 70, .35);
+}
+
+.survey-btn-outline {
+  background: transparent;
+  color: var(--accent, #E63946);
+  border: 2px solid var(--accent, #E63946);
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.survey-btn-outline:hover {
+  background: var(--accent, #E63946);
+  color: #fff;
+}
+
+/* ── Success page ───────────────────────────────────────────── */
+.survey-success-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #d1e7dd;
+  color: #198754;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  animation: surveySuccessPop 0.5s ease;
+}
+
+@keyframes surveySuccessPop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  70%  { transform: scale(1.1); }
+  100% { transform: scale(1);   opacity: 1; }
+}
+
+/* ── Statistics page ────────────────────────────────────────── */
+.survey-stat-card {
+  border-radius: 14px;
+  transition: transform 0.2s;
+}
+
+.survey-stat-card:hover {
+  transform: translateY(-3px);
+}
+
+.survey-stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(var(--accent-rgb, 13, 110, 253), 0.12);
+  color: var(--accent, #E63946);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.survey-stat-value {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #212529;
+  line-height: 1.2;
+}
+
+.survey-stat-label {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+.survey-question-header {
+  background: #f8f9fa;
+  font-weight: 600;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.survey-badge {
+  background: rgba(var(--accent-rgb, 13, 110, 253), 0.12);
+  color: var(--accent, #E63946);
+  font-weight: 600;
+  padding: 0.35em 0.65em;
+}
+
+.survey-badge-active {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+
+.survey-badge-inactive {
+  background: #e9ecef;
+  color: #6c757d;
+}
+
+.survey-progress-bar {
+  background: var(--accent, #E63946);
+  border-radius: 5px;
+  transition: width 0.6s ease;
+}
+
+/* ── Table ──────────────────────────────────────────────────── */
+.survey-table-header {
+  background: #f8f9fa;
+}
+
+.survey-table-header th {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 576px) {
+  .survey-modal {
+    border-radius: 12px;
+  }
+
+  .survey-modal-footer {
+    flex-direction: column;
+  }
+
+  .survey-modal-btn {
+    width: 100%;
+  }
+}
+
+/* ── Listado: badges por grupo de encuestas ─────────────────── */
+.survey-grupo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .45rem .9rem;
+  border-radius: 50px;
+  font-size: .95rem;
+  font-weight: 700;
+  color: #fff;
+}
+.survey-grupo-badge-campana { background: var(--accent, #E63946); }
+.survey-grupo-badge-fija { background: #0d6efd; }

@@ -1,0 +1,45 @@
+{% comment %}
+Sección de dos bloques apilados de la portada: Novedades y, debajo,
+Informaciones. Cada bloque muestra sus destacados (máx. 4) en tarjetas
+horizontales a todo lo ancho del bloque.
+La ocultación por bloque la maneja el template (tiene_novedades / tiene_informaciones).
+{% endcomment %}
+{% if page.tiene_novedades or page.tiene_informaciones %}
+<section id="destacados" class="portada-destacados">
+  <div class="container">
+    <div class="row g-5">
+      {# ── Bloque 1: Novedades (tarjetas horizontales) ── #}
+      {% if page.tiene_novedades %}
+      <div class="col-12">
+        <div class="portada-col portada-col--novedades">
+          <h3 class="portada-col-titulo portada-col-titulo--novedades" data-reveal>
+            <i class="bi bi-stars" aria-hidden="true"></i> Novedades
+          </h3>
+          <div class="row g-3" data-shuffle>
+            {% for contenido in page.novedades_visibles %}
+              {% include "automotive/includes/portada_tarjeta.html" with contenido=contenido modo="horizontal" %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      {# ── Bloque 2: Informaciones (tarjetas horizontales, máx. 4) ── #}
+      {% if page.tiene_informaciones %}
+      <div class="col-12">
+        <div class="portada-col portada-col--informaciones">
+          <h3 class="portada-col-titulo portada-col-titulo--informaciones" data-reveal>
+            <i class="bi bi-megaphone" aria-hidden="true"></i> Informaciones
+          </h3>
+          <div class="row g-3" data-shuffle>
+            {% for contenido in page.informaciones_visibles %}
+              {% include "automotive/includes/portada_tarjeta.html" with contenido=contenido modo="horizontal" %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}

@@ -1,0 +1,59 @@
+{% comment %}
+Cinta de informaciones (ticker) — Servicios Automotores S.A.
+Se renderiza solo cuando la configuración está activada y hay informaciones.
+Estilos: config.estilo ∈ {marquee, slider, estatico}.
+{% endcomment %}
+{% if activada and informaciones %}
+  {% load static %}
+  {% with primera=informaciones.0 %}
+  <div
+    class="cinta-info"
+    data-cinta-estilo="{{ config.estilo }}"
+    data-cinta-velocidad="{% if config.estilo == 'marquee' %}{{ primera.velocidad|default:30 }}{% endif %}"
+    {% if config.estilo == 'slider' %}data-slider-tiempo="{{ primera.velocidad|default:5 }}"{% endif %}
+    {% if config.estilo == 'slider' %}aria-live="polite"{% endif %}
+  >
+    <div class="cinta-info__inner">
+      {% if config.estilo == 'marquee' %}
+        {# Fondo único continuo (color de la primera información) #}
+        <div
+          class="cinta-marquee"
+          data-cinta-marquee
+          style="background: {{ primera.color_fondo }};"
+        >
+          <div class="cinta-marquee__track">
+            {% for info in informaciones %}{% include "informaciones/includes/cinta_item.html" %}{% endfor %}
+            {% for info in informaciones %}{% include "informaciones/includes/cinta_item.html" %}{% endfor %}
+          </div>
+        </div>
+
+      {% elif config.estilo == 'slider' %}
+        <div class="cinta-slider" data-cinta-slider>
+          {% for info in informaciones %}
+            <div
+              class="cinta-slider__slide"
+              data-slide
+              style="background: {{ info.color_fondo }}; color: {{ info.color_texto }};"
+            >
+              {% include "informaciones/includes/cinta_item.html" %}
+            </div>
+          {% endfor %}
+        </div>
+
+      {% else %}
+        {# Estático: todas visibles, separadas, cada una con su color #}
+        <div class="cinta-estatico">
+          {% for info in informaciones %}
+            <span
+              class="cinta-estatico__item"
+              style="background: {{ info.color_fondo }}; color: {{ info.color_texto }};"
+            >
+              {% include "informaciones/includes/cinta_item.html" %}
+            </span>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endwith %}
+{% endif %}

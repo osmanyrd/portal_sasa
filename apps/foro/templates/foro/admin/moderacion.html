@@ -1,0 +1,111 @@
+{% extends "wagtailadmin/base.html" %}
+{% load i18n wagtailadmin_tags %}
+
+{% block titletag %}Moderación del foro{% endblock %}
+
+{% block content %}
+  <form method="get" action="{% url 'foro_moderacion' %}">
+    {% include "wagtailadmin/shared/header.html" with title="Foro · Moderación" icon="conversation" %}
+  </form>
+
+  <div class="nice-padding">
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="message {% if message.tags %}{{ message.tags }}{% endif %}" role="alert">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {# ── Filtros ── #}
+    <form method="get" action="{% url 'foro_moderacion' %}" class="filter-form row g-2 align-items-center mb-4" role="search">
+      <div class="col-auto">
+        <label class="visually-hidden" for="q">Buscar</label>
+        <input class="input" type="search" name="q" id="q" value="{{ q }}" placeholder="Buscar por título…">
+      </div>
+      <div class="col-auto">
+        <label class="visually-hidden" for="estado">Estado</label>
+        <select class="input" name="estado" id="estado">
+          <option value="">— Estado —</option>
+          {% for val, label in estados %}
+            <option value="{{ val }}" {% if estado == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <label class="visually-hidden" for="categoria">Categoría</label>
+        <select class="input" name="categoria" id="categoria">
+          <option value="">— Categoría —</option>
+          {% for cat in categorias %}
+            <option value="{{ cat.pk }}" {% if categoria_id|stringformat:"s" == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto d-flex gap-2">
+        <button type="submit" class="button button-small button-secondary">Filtrar</button>
+        <a href="{% url 'foro_moderacion' %}" class="button button-small button-no">Limpiar</a>
+      </div>
+    </form>
+
+    {# ── Lista con acciones en lote ── #}
+    <form method="post" action="{% url 'foro_moderacion' %}">
+      {% csrf_token %}
+      <table class="listing">
+        <col width="30px">
+        <col width="30px">
+        <col>
+        <col width="15%">
+        <col width="12%">
+        <col width="18%">
+        <col width="10%">
+        <thead>
+          <tr class="table-headers">
+            <th></th>
+            <th><input type="checkbox" onclick="document.querySelectorAll('input[name=tema_ids]').forEach(c=>c.checked=this.checked)" aria-label="Seleccionar todo"></th>
+            <th>Título</th>
+            <th>Categoría</th>
+            <th>Estado</th>
+            <th>Autor</th>
+            <th class="center">Resp.</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tema in temas %}
+            <tr class="{% cycle '' 'odd' %}">
+              <td><a href="{% url 'wagtailadmin_pages:edit' tema.pk %}" class="button button-small button-secondary" aria-label="Editar tema" title="Editar"><i class="icon icon-edit"></i></a></td>
+              <td><input type="checkbox" name="tema_ids" value="{{ tema.pk }}" aria-label="Seleccionar {{ tema.title }}"></td>
+              <td>
+                <a href="{{ tema.url }}" target="_blank" rel="noopener noreferrer">{{ tema.title }}</a>
+                <br><small>{{ tema.fecha_creacion|date:"d M Y H:i" }}</small>
+              </td>
+              <td>{{ tema.categoria.nombre }}</td>
+              <td>
+                <span class="status-tag {% if tema.estado == 'pendiente' %}status-tag--warning{% elif tema.estado == 'cerrado' %}status-tag--critical{% else %}status-tag--ok{% endif %}">
+                  {{ tema.get_estado_display }}
+                </span>
+              </td>
+              <td>{{ tema.autor_visible }}</td>
+              <td class="center">{{ tema.total_respuestas }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="7" class="center">No se encontraron temas con esos filtros.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="d-flex align-items-center gap-2 mt-3 flex-wrap">
+        <select name="accion" class="input" aria-label="Acción en lote">
+          <option value="aprobar">Aprobar seleccionados</option>
+          <option value="fijar">Fijar seleccionados</option>
+          <option value="cerrar">Cerrar seleccionados</option>
+          <option value="pendiente">Devolver a pendiente</option>
+        </select>
+        <button type="submit" class="button button-small button-primary">Aplicar a selección</button>
+      </div>
+    </form>
+
+    {% include "wagtailadmin/shared/pagination_nav.html" with items=temas %}
+  </div>
+{% endblock %}

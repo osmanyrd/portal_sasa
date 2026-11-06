@@ -1,0 +1,114 @@
+{% extends "automotive/base_automotive.html" %}
+{% load static %}
+{% load survey_render %}
+
+{% block title %}{{ encuesta.titulo_publico }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'surveys/css/surveys.css' %}">
+<link rel="stylesheet" href="{% static 'surveys/css/survey_interactive.css' %}">
+<link rel="stylesheet" href="{% static 'catalogo_erp/css/catalog-erp.css' %}">
+{% endblock %}
+
+{% block content %}
+{% include "surveys/includes/survey_hero.html" with hero_tag="Encuesta" hero_title=encuesta.titulo_publico hero_intro=encuesta.descripcion %}
+
+<div class="survey-wizard-wrap">
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 col-xl-7">
+
+        <div class="survey-wizard card border-0 shadow-sm">
+          <div class="card-body p-4 p-md-5">
+
+            {# ── Barra de progreso ── #}
+            <div class="survey-progress-head mb-4">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="survey-progress-label" id="surveyProgressLabel">
+                  Pregunta 1 de {{ preguntas|length }}
+                </span>
+                <span class="survey-progress-pct" id="surveyProgressPct">0%</span>
+              </div>
+              <div class="progress" style="height: 8px;">
+                <div class="progress-bar survey-progress-bar" id="surveyProgressBar"
+                     role="progressbar" style="width: 0%;"
+                     aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+            </div>
+
+            {% if messages %}
+              {% for msg in messages %}
+                <div class="alert alert-{{ msg.tags }} survey-alert" role="alert">
+                  <i class="bi bi-{% if msg.tags == 'success' %}check-circle{% elif msg.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                  {{ msg }}
+                </div>
+              {% endfor %}
+            {% endif %}
+
+            <form method="post" action="" class="survey-form" id="surveyForm"
+                  data-autoguardar="{% if encuesta.autoguardar %}1{% endif %}"
+                  data-autosave-url="{% url 'surveys:autosave' encuesta.pk %}"
+                  data-una-por-pantalla="{% if encuesta.una_pregunta_por_pantalla %}1{% endif %}"
+                  data-permitir-atras="{% if encuesta.permitir_volver_atras %}1{% endif %}"
+                  data-total="{{ preguntas|length }}">
+              {% csrf_token %}
+
+              {% if encuesta.preguntar_correo %}
+              <div class="survey-question survey-step" data-index="correo" id="step-correo">
+                <div class="survey-question-label mb-2">
+                  <span class="survey-question-number"><i class="bi bi-envelope"></i></span>
+                  Tu correo electrónico (opcional)
+                </div>
+                <input type="email" class="form-control" name="correo_participante"
+                       id="correo_participante" placeholder="correo@ejemplo.com"
+                       autocomplete="email" value="{{ autosave.correo_participante|default:'' }}">
+                <div class="form-text">Lo usaremos solo para confirmar tu participación.</div>
+              </div>
+              {% endif %}
+
+              {% for pregunta in preguntas %}
+                <div class="survey-question survey-step" data-index="{{ forloop.counter0 }}" data-pregunta="{{ pregunta.pk }}" data-tipo="{{ pregunta.tipo }}" data-requerida="{{ pregunta.requerida|yesno:'1,0' }}" id="step-{{ forloop.counter0 }}">
+                  <div class="survey-question-label">
+                    <span class="survey-question-number">{{ forloop.counter }}.</span>
+                    {{ pregunta.texto }}
+                    {% if pregunta.requerida %}<span class="survey-required-star" aria-hidden="true">*</span>{% endif %}
+                  </div>
+                  {% if pregunta.ayuda %}
+                    <p class="survey-question-help">{{ pregunta.ayuda }}</p>
+                  {% endif %}
+
+                  {% render_pregunta_form pregunta form %}
+                </div>
+              {% endfor %}
+
+              <div class="survey-wizard-nav mt-4">
+                <button type="button" class="btn survey-btn-outline survey-wizard-prev" id="surveyPrevBtn">
+                  <i class="bi bi-arrow-left me-1"></i>Anterior
+                </button>
+
+                <div class="ms-auto d-flex gap-2">
+                  <button type="button" class="btn survey-btn-outline survey-wizard-next" id="surveyNextBtn">
+                    Siguiente<i class="bi bi-arrow-right ms-1"></i>
+                  </button>
+                  <button type="submit" class="btn survey-btn-primary survey-wizard-submit" id="surveySubmitBtn">
+                    <i class="bi bi-check2-circle me-2"></i>Enviar respuestas
+                  </button>
+                </div>
+              </div>
+            </form>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="survey-live-region" id="surveyLiveRegion" role="status" aria-live="polite" class="visually-hidden"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/js/sortable.min.js' %}" defer></script>
+<script src="{% static 'surveys/js/survey_interactive.js' %}" defer></script>
+{% endblock %}

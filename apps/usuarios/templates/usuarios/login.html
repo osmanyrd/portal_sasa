@@ -1,0 +1,44 @@
+{% extends "usuarios/base_usuario.html" %}
+{% load static %}
+
+{% block title %}Iniciar sesión | Servicios Automotores S.A{% endblock %}
+
+{% block auth_card %}
+<div class="auth-card mx-auto" style="max-width:420px">
+  <div class="auth-card__header">
+    <h1 class="auth-card__title">Iniciar sesión</h1>
+    <p class="auth-card__subtitle">Accedé a tu cuenta para participar en el foro y más.</p>
+  </div>
+
+  <form method="post" class="auth-form" novalidate>
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <label for="id_username" class="form-label fw-semibold">Usuario</label>
+      <input type="text" name="username" id="id_username" class="form-control"
+             value="{{ form.username.value|default:'' }}" required autofocus
+             placeholder="Tu usuario">
+      {% if form.username.errors %}
+        <div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>
+      {% endif %}
+    </div>
+
+    <div class="mb-3">
+      <label for="id_password" class="form-label fw-semibold">Contraseña</label>
+      <input type="password" name="password" id="id_password" class="form-control"
+             required placeholder="Tu contraseña">
+      {% if form.password.errors %}
+        <div class="invalid-feedback d-block">{{ form.password.errors.0 }}</div>
+      {% endif %}
+    </div>
+
+    <button type="submit" class="btn btn-accent w-100 mb-3">
+      <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i> Entrar
+    </button>
+  </form>
+
+  <div class="auth-card__footer">
+    <p>¿No tenés cuenta? <a href="{% url 'registro' %}" class="auth-link">Registrate acá</a></p>
+  </div>
+</div>
+{% endblock %}

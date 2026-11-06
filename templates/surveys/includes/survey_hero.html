@@ -1,0 +1,8 @@
+<div class="catalog-hero-wrap">
+  <div class="catalog-hero-wrap__bg" aria-hidden="true"></div>
+  <div class="container catalog-hero">
+    {% if hero_tag %}<span class="section-tag"><i class="bi bi-clipboard2-pulse-fill me-2" aria-hidden="true"></i>{{ hero_tag }}</span>{% endif %}
+    <h1 class="catalog-hero__title fw-bold mt-2 mb-2">{{ hero_title }}</h1>
+    {% if hero_intro %}<p class="catalog-hero__intro mb-0">{{ hero_intro }}</p>{% endif %}
+  </div>
+</div>

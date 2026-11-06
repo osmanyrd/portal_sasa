@@ -1,0 +1,299 @@
+import json
+
+from django.db import models
+from modelcluster.fields import ParentalKey
+from modelcluster.models import ClusterableModel
+from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
+from wagtail.contrib.settings.models import BaseSiteSetting
+from wagtail.contrib.settings.registry import register_setting
+from django.db.models import Prefetch
+from wagtail.models import Page
+
+from .fields import CoordenadaField
+from .validators import validar_rango_latitud, validar_rango_longitud
+
+
+
+@register_setting
+class ConfiguracionMapa(BaseSiteSetting):
+    imagen_mapa = models.ForeignKey(
+        "wagtailimages.Image",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        help_text="Imagen del mapa de Cuba sobre la cual se superponen los marcadores (pins).",
+    )
+    ancho_imagen = models.PositiveIntegerField(
+        null=True, blank=True, default=1200,
+        help_text="Ancho en píxeles de la imagen original del mapa (referencia para %).",
+    )
+    alto_imagen = models.PositiveIntegerField(
+        null=True, blank=True, default=500,
+        help_text="Alto en píxeles de la imagen original del mapa (referencia para %).",
+    )
+
+    panels = [
+        MultiFieldPanel([
+            FieldPanel("imagen_mapa"),
+        ], heading="Imagen del mapa"),
+        MultiFieldPanel([
+            FieldPanel("ancho_imagen"),
+            FieldPanel("alto_imagen"),
+        ], heading="Dimensiones de referencia"),
+    ]
+
+    class Meta:
+        verbose_name = "Configuración del Mapa"
+        verbose_name_plural = "Configuración del Mapa"
+
+    def get_mapa_url(self):
+        if self.imagen_mapa:
+            rend = self.imagen_mapa.get_rendition("original")
+            return rend.url
+        return ""
+
+
+class Provincia(ClusterableModel):
+    nombre = models.CharField(max_length=100, unique=True)
+    codigo = models.CharField(
+        max_length=10, unique=True,
+        help_text="Código corto, ej. PR, SS, HO",
+    )
+    descripcion = models.TextField(blank=True, default="")
+    imagen_bandera = models.ForeignKey(
+        "wagtailimages.Image",
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="+",
+    )
+    orden = models.IntegerField(default=0)
+    activo = models.BooleanField(default=True)
+
+    panels = [
+        MultiFieldPanel([
+            FieldPanel("nombre"),
+            FieldPanel("codigo"),
+            FieldPanel("orden"),
+            FieldPanel("activo"),
+        ], heading="Información básica"),
+        FieldPanel("descripcion"),
+        FieldPanel("imagen_bandera"),
+        InlinePanel("dependencias", label="Dependencias"),
+    ]
+
+    class Meta:
+        ordering = ["orden", "nombre"]
+        verbose_name = "Provincia"
+        verbose_name_plural = "Provincias"
+
+    def __str__(self):
+        return f"{self.nombre} ({self.codigo})"
+
+    def clean(self):
+        super().clean()
+        if self.codigo:
+            self.codigo = self.codigo.upper().strip()
+
+    def total_dependencias(self):
+        return self.dependencias.filter(activo=True).count()
+
+    total_dependencias.short_description = "Dependencias"
+
+
+class Dependencia(models.Model):
+    TIPO_CHOICES = [
+        ("sucursal", "Sucursal"),
+        ("taller", "Taller"),
+        ("oficina", "Oficina"),
+        ("almacen", "Almacén"),
+        ("otro", "Otro"),
+    ]
+
+    nombre = models.CharField(max_length=200)
+    provincia = ParentalKey(
+        Provincia,
+        on_delete=models.CASCADE,
+        related_name="dependencias",
+    )
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default="sucursal")
+    posicion_x = models.PositiveIntegerField(
+        default=50,
+        help_text=(
+            "Posición horizontal del marcador sobre la imagen (0-100%). "
+            "0% = izquierda, 100% = derecha."
+        ),
+    )
+    posicion_y = models.PositiveIntegerField(
+        default=50,
+        help_text=(
+            "Posición vertical del marcador sobre la imagen (0-100%). "
+            "0% = superior, 100% = inferior."
+        ),
+    )
+    foto = models.ForeignKey(
+        "wagtailimages.Image",
+        on_delete=models.CASCADE,
+        related_name="+",
+    )
+    descripcion = models.TextField(blank=True, default="")
+    direccion = models.CharField(max_length=255)
+    telefono = models.CharField(max_length=50, blank=True, default="")
+    email = models.EmailField(blank=True, default="")
+    horario = models.CharField(max_length=100, blank=True, default="")
+    latitud = CoordenadaField(
+        max_digits=12, decimal_places=8, null=True, blank=True,
+        validators=[validar_rango_latitud],
+        help_text=(
+            "Latitud en grados decimales (entre -90 y 90), "
+            "ej. 23.13700000. "
+            "Puedes obtenerla desde Google Maps: clic derecho sobre el "
+            "lugar y elige '¿Qué hay aquí?' o 'Copiar coordenadas'."
+        ),
+    )
+    longitud = CoordenadaField(
+        max_digits=12, decimal_places=8, null=True, blank=True,
+        validators=[validar_rango_longitud],
+        help_text=(
+            "Longitud en grados decimales (entre -180 y 180), "
+            "ej. -82.35400000. "
+            "Se acepta la coordenada completa de Google Maps "
+            "con hasta 8 decimales."
+        ),
+    )
+    activo = models.BooleanField(default=True)
+
+    panels = [
+        FieldPanel("nombre"),
+        FieldPanel("provincia"),
+        FieldPanel("tipo"),
+        MultiFieldPanel([
+            FieldPanel("posicion_x"),
+            FieldPanel("posicion_y"),
+        ], heading=(
+            "Ubicación del marcador en % — 0% es izquierda/superior, "
+            "100% es derecha/inferior"
+        )),
+        FieldPanel("foto"),
+        FieldPanel("descripcion"),
+        FieldPanel("direccion"),
+        FieldPanel("telefono"),
+        FieldPanel("email"),
+        FieldPanel("horario"),
+        MultiFieldPanel([
+            FieldPanel("latitud"),
+            FieldPanel("longitud"),
+        ], heading="Coordenadas geográficas"),
+        FieldPanel("activo"),
+    ]
+
+    class Meta:
+        ordering = ["nombre"]
+        verbose_name = "Dependencia"
+        verbose_name_plural = "Dependencias"
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(latitud__gte=-90, latitud__lte=90)
+                | models.Q(latitud__isnull=True),
+                name="dependencia_latitud_rango",
+            ),
+            models.CheckConstraint(
+                check=models.Q(longitud__gte=-180, longitud__lte=180)
+                | models.Q(longitud__isnull=True),
+                name="dependencia_longitud_rango",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.nombre} — {self.get_tipo_display()}"
+
+
+class MapaDependenciasPage(Page):
+    introduccion = models.TextField(blank=True, default="")
+    imagen_portada = models.ForeignKey(
+        "wagtailimages.Image",
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="+",
+    )
+
+    content_panels = Page.content_panels + [
+        FieldPanel("introduccion"),
+        FieldPanel("imagen_portada"),
+    ]
+
+    parent_page_types = ["home.HomePage"]
+    subpage_types = []
+
+    class Meta:
+        verbose_name = "Mapa de Dependencias"
+        verbose_name_plural = "Mapas de Dependencias"
+
+    def get_context(self, request, *args, **kwargs):
+        ctx = super().get_context(request, *args, **kwargs)
+        ctx["provincias_json"] = _build_provincias_json()
+        return ctx
+
+
+def _build_provincias_json():
+    """Serializa provincias activas + dependencias activas con hotspot positions."""
+    from django.core.cache import cache
+
+    datos = cache.get("mapa_provincias_json")
+    if datos is None:
+        datos = json.dumps(_provincias_data(), ensure_ascii=False)
+        cache.set("mapa_provincias_json", datos, 60 * 10)
+    return datos
+
+
+def _provincias_data():
+    """Lista serializada de provincias (reutilizada por el API y la página)."""
+    provincias = Provincia.objects.filter(activo=True).prefetch_related(
+        Prefetch(
+            "dependencias",
+            queryset=Dependencia.objects.filter(activo=True).select_related("foto"),
+        ),
+        "imagen_bandera",
+    ).order_by("orden", "nombre")
+
+    data = []
+    for p in provincias:
+        bandera_url = ""
+        if p.imagen_bandera:
+            rend = p.imagen_bandera.get_rendition("fill-40x25|format-webp")
+            bandera_url = rend.url
+
+        deps = []
+        for d in p.dependencias.all():
+            foto_url = ""
+            if d.foto:
+                rend = d.foto.get_rendition("fill-400x300|format-webp")
+                foto_url = rend.url
+            deps.append({
+                "id": d.pk,
+                "nombre": d.nombre,
+                "tipo": d.tipo,
+                "tipo_display": d.get_tipo_display(),
+                "posicion_x": d.posicion_x,
+                "posicion_y": d.posicion_y,
+                "foto_url": foto_url,
+                "descripcion": d.descripcion,
+                "direccion": d.direccion,
+                "telefono": d.telefono,
+                "email": d.email,
+                "horario": d.horario,
+                "latitud": round(float(d.latitud), 8) if d.latitud is not None else None,
+                "longitud": round(float(d.longitud), 8) if d.longitud is not None else None,
+            })
+
+        data.append({
+            "codigo": p.codigo,
+            "nombre": p.nombre,
+            "total_dependencias": len(deps),
+            "dependencias": deps,
+        })
+
+    return data
+
+
+

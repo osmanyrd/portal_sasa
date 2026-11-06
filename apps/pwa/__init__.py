@@ -1,0 +1,1 @@
+from apps.pwa import views as pwa_views

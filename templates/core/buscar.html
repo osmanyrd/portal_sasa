@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load static wagtailcore_tags %}
+
+{% block seo_title %}{% if q %}Resultados para «{{ q }}»{% else %}Búsqueda{% endif %} · {{ SITE_NAME }}{% endblock %}
+
+{% block meta_description %}Búsqueda de contenido en {{ SITE_NAME }}{% endblock %}
+
+{% block og_type %}website{% endblock %}
+
+{% block content %}
+<section class="page-header position-relative overflow-hidden">
+    <div class="container position-relative py-5">
+        <div class="py-md-4">
+            <h1 class="display-5 fw-bold">Búsqueda</h1>
+            <p class="lead mb-0 opacity-90">Encontrá contenido dentro del sitio.</p>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <form action="{% url 'buscar' %}" method="get" role="search" class="mb-4">
+            <div class="input-group">
+                <input type="search" name="q" class="form-control form-control-lg"
+                       placeholder="¿Qué estás buscando?" value="{{ q }}" aria-label="Término de búsqueda" maxlength="200">
+                <button class="btn btn-dark btn-lg" type="submit">
+                    <i class="bi bi-search me-1"></i>Buscar
+                </button>
+            </div>
+        </form>
+
+        {% if q %}
+            <h2 class="h5 mb-3 text-muted">{{ resultados|length }} resultado{{ resultados|length|pluralize }} para «{{ q }}»</h2>
+
+            {% if resultados %}
+                <div class="list-group list-group-flush">
+                    {% for result, resultado_tipo in resultados %}
+                        <a href="{% pageurl result %}" class="list-group-item list-group-item-action py-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h3 class="h6 mb-1 fw-semibold">{{ result.title }}</h3>
+                                    {% if result.specific.subtitle %}
+                                        <p class="mb-0 text-muted small">{{ result.specific.subtitle }}</p>
+                                    {% endif %}
+                                </div>
+                                <span class="badge text-bg-light ms-3 mt-1">{{ resultado_tipo }}</span>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info d-flex align-items-center" role="alert">
+                    <i class="bi bi-search me-2 fs-5"></i>
+                    <div>No se encontraron resultados para «{{ q }}». Probá con otros términos.</div>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-search display-4 d-block mb-2"></i>
+                <p class="mb-0">Escribí un término de búsqueda para comenzar.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

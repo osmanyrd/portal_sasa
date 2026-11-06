@@ -1,0 +1,36 @@
+{% extends "automotive/base_automotive.html" %}
+{% load static wagtailimages_tags %}
+
+{% block title %}Mi perfil | Servicios Automotores S.A{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'usuarios/css/usuarios.css' %}">
+{% endblock %}
+
+{% block content %}
+<div style="min-height:60vh;"></div>
+
+<div class="modal fade" id="perfilModal" tabindex="-1" aria-labelledby="perfilModalLabel" aria-hidden="true"
+     data-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+    <div class="modal-content" id="perfilModalContent">
+      {% include "usuarios/includes/perfil_modal_body.html" %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var modal = document.getElementById("perfilModal");
+    if (modal) {
+      var bsModal = new bootstrap.Modal(modal, {backdrop: "static"});
+      bsModal.show();
+      modal.addEventListener("hidden.bs.modal", function () {
+        window.location.href = "/";
+      });
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Django / Wagtail
+.env
+db.sqlite3
+media/
+staticfiles/
+
+# Entornos y editores
+.idea/
+.vscode/
+.DS_Store
+
+# Scripts de arranque local (contienen variables de entorno del equipo)
+runserver.py
+start_server.bat
+
+# Archivo de diseño original (prototipo con CDNs, ya reemplazado por el sitio)
+_archivo/
+
+# Docker (opcional: conservar volúmenes locales fuera del repo)
+*.log

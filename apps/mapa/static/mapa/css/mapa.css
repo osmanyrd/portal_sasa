@@ -1,0 +1,501 @@
+/* ============================================
+   MAPA DE DEPENDENCIAS — Servicios Automotores
+   Palette: white / black / red #E63946
+   ============================================ */
+
+/* ---------- Hero ---------- */
+.mapa-hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #fff;
+  padding: 3rem 0 2rem;
+  text-align: center;
+}
+.mapa-hero__img-wrap {
+  max-width: 900px;
+  margin: 0 auto 1.5rem;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+}
+.mapa-hero__img-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.mapa-hero__title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 2.2rem;
+  margin-bottom: .75rem;
+}
+.mapa-hero__intro {
+  max-width: 700px;
+  margin: 0 auto;
+  font-size: 1.05rem;
+  opacity: .85;
+  line-height: 1.6;
+}
+
+/* ---------- Layout ---------- */
+.mapa-main {
+  padding: 2.5rem 0 3rem;
+  background: #f8f9fa;
+  min-height: 60vh;
+}
+.mapa-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+/* Panel lateral: oculto hasta que se seleccione una provincia del mapa */
+.mapa-layout--panel-open {
+  grid-template-columns: 1fr 420px;
+}
+.mapa-layout__panel {
+  display: none;
+}
+.mapa-layout--panel-open .mapa-layout__panel {
+  display: block;
+  animation: mapaPanelSlide .45s cubic-bezier(.16, 1, .3, 1);
+}
+@keyframes mapaPanelSlide {
+  from { opacity: 0; transform: translateX(18px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@media (max-width: 992px) {
+  .mapa-layout--panel-open {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Mapa ---------- */
+.mapa-container {
+  position: relative;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.08);
+  padding: 1.5rem;
+  overflow: hidden;
+}
+.mapa-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Province paths */
+.provincia {
+  fill: #dee2e6;
+  stroke: #fff;
+  stroke-width: 1.5;
+  cursor: pointer;
+  transition: fill .2s, stroke .2s, filter .2s;
+  outline: none;
+}
+.provincia:hover,
+.provincia--hover {
+  fill: #adb5bd;
+  stroke: #495057;
+  stroke-width: 2;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,.15));
+}
+.provincia--activa {
+  fill: #E63946;
+  stroke: #fff;
+  stroke-width: 2.5;
+  filter: drop-shadow(0 3px 10px rgba(230,57,70,.4));
+}
+.provincia:focus-visible {
+  stroke: #E63946;
+  stroke-width: 3;
+}
+.provincia--con-deps {
+  fill: #ffc9c9;
+}
+
+/* Province labels */
+.mapa-labels {
+  pointer-events: none;
+}
+.mapa-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 7px;
+  font-weight: 600;
+  fill: #495057;
+  pointer-events: none;
+  user-select: none;
+}
+.provincia--activa ~ .mapa-labels .mapa-label,
+.mapa-label.active-label {
+  fill: #fff;
+}
+
+/* ── SVG Badge (conteo de dependencias por provincia) ── */
+.mapa-badge-bg {
+  fill: #E63946;
+  stroke: #fff;
+  stroke-width: 2;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.3));
+  transition: fill .2s, r .2s;
+}
+.mapa-badge-text {
+  fill: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 8px;
+  font-weight: 800;
+  pointer-events: none;
+  user-select: none;
+}
+.mapa-badge-group {
+  pointer-events: none;
+  transition: opacity .2s;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mapaBadgeFloat 3.4s ease-in-out infinite;
+}
+/* Flotación mínima del badge (cada uno con su propio timing vía JS) */
+@keyframes mapaBadgeFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-1.5px) scale(1.08); }
+}
+.mapa-badge-group--activa {
+  animation: none;
+  transform: translateY(-2px) scale(1.14);
+}
+.mapa-badge-group--activa .mapa-badge-bg {
+  fill: #1a1a2e;
+  stroke: #E63946;
+  stroke-width: 2.5;
+}
+.mapa-badge-group--activa .mapa-badge-text {
+  fill: #fff;
+}
+
+/* Tooltip */
+.mapa-tooltip {
+  position: absolute;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: .85rem;
+  font-weight: 600;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .15s;
+  white-space: nowrap;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+}
+.mapa-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1a1a2e;
+}
+.mapa-tooltip.visible {
+  opacity: 1;
+}
+
+/* Legend */
+.mapa-legend {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: .85rem;
+  color: #6c757d;
+}
+.mapa-legend__dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: #E63946;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+/* ---------- Panel ---------- */
+.mapa-panel {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.08);
+  padding: 1.5rem;
+  min-height: 300px;
+  position: sticky;
+  top: 1rem;
+}
+.mapa-panel__empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #adb5bd;
+}
+.mapa-panel__empty i {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+.mapa-panel__empty h3 {
+  font-weight: 700;
+  color: #495057;
+  margin-bottom: .5rem;
+}
+.mapa-panel__header {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #E63946;
+}
+.mapa-panel__header h2 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 1.35rem;
+  color: #1a1a2e;
+  margin: 0 0 .25rem;
+}
+.mapa-panel__header p {
+  margin: 0;
+  font-size: .9rem;
+  color: #6c757d;
+}
+
+/* ---------- Tarjeta de dependencia (sin marco) ---------- */
+.dep-card {
+  background: #fff;
+  border: 0;
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+  overflow: hidden;
+  margin-bottom: 1rem;
+  transition: box-shadow .25s, transform .25s;
+}
+.dep-card:hover {
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .12);
+  transform: translateY(-3px);
+}
+.dep-card__header {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .75rem 1rem .5rem;
+  border-bottom: 0;
+}
+.dep-card__number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border-radius: 50%;
+  background: #E63946;
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 800;
+}
+.dep-card__name {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #1a1a2e;
+  margin: 0;
+  flex: 1;
+}
+.dep-card__badge {
+  display: inline-block;
+  background: #E63946;
+  color: #fff;
+  font-size: .68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  white-space: nowrap;
+}
+.dep-card__img,
+.dep-card__foto {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+}
+.dep-card__body {
+  padding: .75rem 1rem 1rem;
+}
+.dep-card__desc {
+  font-size: .88rem;
+  color: #495057;
+  margin-bottom: .75rem;
+  line-height: 1.5;
+}
+.dep-card__meta {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: .82rem;
+  color: #6c757d;
+}
+.dep-card__meta li {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  margin-bottom: .35rem;
+}
+.dep-card__meta i {
+  color: #E63946;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.dep-card__meta a {
+  color: #E63946;
+  text-decoration: none;
+}
+.dep-card__meta a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Acciones de la tarjeta (Llamar / Cómo llegar) ---------- */
+.dep-card__actions {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  margin: .85rem 0 0;
+}
+.dep-card__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  padding: .6rem 1.1rem;
+  min-height: 44px;
+  border: none;
+  border-radius: 10px;
+  font-size: .88rem;
+  font-weight: 700;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .2s, background .2s, color .2s;
+}
+.dep-card__action i {
+  font-size: 1.15rem;
+}
+.dep-card__action:active {
+  transform: translateY(1px) scale(.98);
+}
+.dep-card__action:focus-visible {
+  outline: 3px solid rgba(230, 57, 70, .45);
+  outline-offset: 2px;
+}
+.dep-card__llamar {
+  background: linear-gradient(135deg, #ff4d5e 0%, #E63946 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(230, 57, 70, .35);
+}
+.dep-card__llamar:hover {
+  background: linear-gradient(135deg, #ff5b6b 0%, #d9202f 100%);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(230, 57, 70, .45);
+}
+.dep-card__llegar {
+  background: #fff;
+  color: #1a1a2e;
+  border: 2px solid #1a1a2e;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .06);
+}
+.dep-card__llegar:hover {
+  background: #1a1a2e;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(26, 26, 46, .25);
+}
+.dep-card__no-deps {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #adb5bd;
+  font-style: italic;
+}
+
+/* ── Panel title row + count + deps list ── */
+.mapa-panel__title-row {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  flex-wrap: wrap;
+}
+.mapa-panel__title-row h2 {
+  margin: 0 !important;
+}
+.mapa-panel__flag {
+  height: 22px;
+  vertical-align: middle;
+  border-radius: 4px;
+  margin-right: 4px;
+}
+.mapa-panel__count {
+  display: inline-block;
+  background: #f0f0f0;
+  color: #495057;
+  font-size: .78rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.mapa-panel__no-deps {
+  color: #adb5bd;
+  font-style: italic;
+  font-size: .9rem;
+}
+.mapa-deps-list {
+  max-height: 55vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.mapa-deps-list::-webkit-scrollbar {
+  width: 5px;
+}
+.mapa-deps-list::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 3px;
+}
+.mapa-deps-list::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+.mapa-deps-list::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 992px) {
+  .mapa-panel {
+    position: static;
+  }
+  .mapa-hero__title {
+    font-size: 1.6rem;
+  }
+}
+@media (max-width: 576px) {
+  .mapa-container {
+    padding: .75rem;
+  }
+  .dep-card__img {
+    height: 140px;
+  }
+  .mapa-label {
+    font-size: 5.5px;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .mapa-badge-group {
+    animation: none !important;
+  }
+  .mapa-layout--panel-open .mapa-layout__panel {
+    animation: none;
+  }
+}

@@ -1,0 +1,171 @@
+{% extends "automotive/base_automotive.html" %}
+{% load static wagtailcore_tags %}
+
+{% block title %}{{ page.title }} | Servicios Automotores S.A{% endblock %}
+{% block meta_description %}{{ page.introduccion|striptags|truncatechars:160 }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'foro/css/foro.css' %}">
+<link rel="stylesheet" href="{% static 'catalogo_erp/css/catalog-erp.css' %}">
+{% endblock %}
+
+{% block content %}
+{# ── Cabecera (hero negro del catálogo) ── #}
+{% include "surveys/includes/survey_hero.html" with hero_tag="Comunidad" hero_title=page.title hero_intro=page.introduccion|striptags|truncatechars:160 %}
+{% if page.reglas %}
+  <div class="container foro-reglas-wrap">
+    <details class="foro-reglas" aria-label="Reglas de la comunidad">
+      <summary>
+        <i class="bi bi-list-check me-2" aria-hidden="true"></i>Reglas de la comunidad
+      </summary>
+      <div class="rich-text foro-reglas__body">{{ page.reglas|richtext }}</div>
+    </details>
+  </div>
+{% endif %}
+
+<section class="container py-4">
+  {# ── Barra de acciones: búsqueda + nuevo tema ── #}
+  <div class="foro-toolbar mb-4">
+    <form class="foro-search" method="get" role="search" aria-label="Buscar temas">
+      <label class="visually-hidden" for="foroQ">Buscar en el foro</label>
+      <input
+        type="search"
+        id="foroQ"
+        name="q"
+        class="foro-search__input"
+        value="{{ q }}"
+        placeholder="Buscar por título o contenido…"
+        aria-label="Buscar temas del foro">
+      <button type="submit" class="foro-search__btn" aria-label="Buscar">
+        <i class="bi bi-search" aria-hidden="true"></i>
+      </button>
+    </form>
+
+    {% if pueden_participar %}
+      <details class="foro-nuevo-tema" aria-label="Crear un nuevo tema">
+        <summary class="btn btn-accent foro-nuevo-tema__toggle">
+          <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>Nuevo tema
+        </summary>
+        <div class="foro-nuevo-tema__panel">
+          <h2 class="h5 fw-bold mb-3">
+            <i class="bi bi-chat-square-text me-2 text-accent" aria-hidden="true"></i>Crear un nuevo tema
+          </h2>
+          <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form_nuevo_tema.non_field_errors %}
+              <div class="alert alert-danger" role="alert">{{ form_nuevo_tema.non_field_errors }}</div>
+            {% endif %}
+            <div class="mb-3">
+              <label class="form-label" for="id_categoria">Categoría</label>
+              {{ form_nuevo_tema.categoria }}
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="id_titulo">Título</label>
+              {{ form_nuevo_tema.titulo }}
+            </div>
+            {% if form_nuevo_tema.nombre_anonimo.field.required %}
+              <div class="mb-3">
+                <label class="form-label" for="id_nombre_anonimo">{{ form_nuevo_tema.nombre_anonimo.label }}</label>
+                {{ form_nuevo_tema.nombre_anonimo }}
+              </div>
+            {% endif %}
+            <div class="mb-3">
+              <label class="form-label" for="id_cuerpo">Contenido</label>
+              {{ form_nuevo_tema.cuerpo }}
+            </div>
+            <button type="submit" class="btn btn-accent">Publicar tema</button>
+          </form>
+        </div>
+      </details>
+    {% else %}
+      <a class="btn btn-outline-accent" href="{% url 'login' %}?next={{ request.path|urlencode }}" aria-label="Iniciar sesión para participar">
+        <i class="bi bi-box-arrow-in-right me-1" aria-hidden="true"></i>Inicia sesión para participar
+      </a>
+    {% endif %}
+  </div>  {# ── Categorías ── #}
+  <div class="foro-categorias mb-5">
+    <h2 class="foro-section-title">
+      <i class="bi bi-collection me-2 text-accent" aria-hidden="true"></i>Categorías
+    </h2>
+    <div class="row g-3">
+      {% for cat in categorias %}
+        <div class="col-md-6 col-lg-4">
+          <a class="foro-cat-card" href="?{% if q %}q={{ q|urlencode }}&{% endif %}categoria={{ cat.slug }}">
+            <div class="foro-cat-card__icon" aria-hidden="true">
+              {% if cat.icono %}<i class="bi {{ cat.icono }}"></i>{% else %}<i class="bi bi-folder2-open"></i>{% endif %}
+            </div>
+            <div class="foro-cat-card__info">
+              <span class="foro-cat-card__name">{{ cat.nombre }}</span>
+              <span class="foro-cat-card__meta">{{ cat.total_temas }} temas</span>
+            </div>
+          </a>
+        </div>
+      {% empty %}
+        <p class="text-secondary">Aún no hay categorías de foro.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# ── Temas recientes ── #}
+  <div class="foro-temas">
+    <h2 class="foro-section-title">
+      <i class="bi bi-chat-left-text me-2 text-accent" aria-hidden="true"></i>Temas recientes
+    </h2>
+
+    {% if temas.object_list %}
+      <div class="foro-lista-temas">
+        {% for tema in temas %}
+          <article class="foro-tema-item">
+            {% if tema.esta_fijado %}<span class="foro-badge foro-badge--fijado"><i class="bi bi-pin-angle-fill me-1"></i>Fijado</span>{% endif %}
+            {% if tema.esta_cerrado %}<span class="foro-badge foro-badge--cerrado"><i class="bi bi-lock-fill me-1"></i>Cerrado</span>{% endif %}
+            <div class="foro-tema-item__avatar" aria-hidden="true">{{ tema.inicial }}</div>
+            <div class="foro-tema-item__body">
+              <h3 class="foro-tema-item__title">
+                <a href="{{ tema.url }}">{{ tema.title }}</a>
+              </h3>
+              <div class="foro-tema-item__meta">
+                <span><i class="bi bi-person me-1" aria-hidden="true"></i>{{ tema.autor_visible }}</span>
+                <span><i class="bi bi-tag me-1" aria-hidden="true"></i>{{ tema.categoria.nombre }}</span>
+                <span><i class="bi bi-clock me-1" aria-hidden="true"></i>{{ tema.fecha_creacion|date:"d M Y" }}</span>
+                <span><i class="bi bi-chat-dots me-1" aria-hidden="true"></i>{{ tema.total_respuestas_aprobadas }}</span>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+
+      {% if temas.paginator.num_pages > 1 %}
+        <nav class="mt-4" aria-label="Paginación de temas">
+          <ul class="pagination justify-content-center">
+            {% if temas.has_previous %}
+              <li class="page-item"><a class="page-link" href="?page={{ temas.previous_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}" aria-label="Página anterior">&laquo;</a></li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+            {% endif %}
+            {% for n in temas.paginator.page_range %}
+              <li class="page-item{% if n == temas.number %} active{% endif %}">
+                <a class="page-link" href="?page={{ n }}{% if q %}&q={{ q|urlencode }}{% endif %}">{{ n }}</a>
+              </li>
+            {% endfor %}
+            {% if temas.has_next %}
+              <li class="page-item"><a class="page-link" href="?page={{ temas.next_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}" aria-label="Página siguiente">&raquo;</a></li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+            {% endif %}
+          </ul>
+        </nav>
+      {% endif %}
+    {% else %}
+      <div class="foro-vacio text-center py-5">
+        <i class="bi bi-chat-square-dots display-4" aria-hidden="true"></i>
+        <h3 class="h5 mt-3">No hay temas todavía</h3>
+        <p class="text-secondary">Sé el primero en abrir una conversación sobre los servicios o repuestos.</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'foro/js/foro.js' %}" defer></script>
+{% endblock %}

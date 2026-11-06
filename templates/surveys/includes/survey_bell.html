@@ -1,0 +1,61 @@
+{% load static wagtailcore_tags %}
+{% if contador_encuestas_pendientes %}
+<!-- Campanita de encuestas pendientes (dropdown con lista + boton Responder por encuesta). -->
+<li class="nav-item ms-lg-1 survey-bell-item">
+  <div class="survey-bell" data-survey-bell>
+    <button
+      type="button"
+      class="survey-bell__btn"
+      data-survey-bell-btn
+      aria-expanded="false"
+      aria-haspopup="true"
+      aria-controls="surveyBellPanel"
+      aria-label="Encuestas pendientes por responder: {{ contador_encuestas_pendientes }}">
+      <i class="bi bi-clipboard2-pulse-fill" aria-hidden="true"></i>
+      {% if contador_encuestas_pendientes %}
+        <span class="survey-bell__badge" aria-hidden="true">{{ contador_encuestas_pendientes }}</span>
+
+        {% if encuesta_pendiente.es_campana and encuesta_pendiente.mostrar_modal_primera_visita %}
+        <span class="survey-bell__nueva" id="surveyBellNueva" data-survey-bell-nueva hidden>
+          <span class="survey-bell__nueva-dot" aria-hidden="true"></span>
+          Encuesta nueva
+          <span class="survey-bell__nueva-close" id="surveyBellNuevaClose" aria-label="Ocultar aviso">&times;</span>
+        </span>
+        {% endif %}
+      {% endif %}
+    </button>
+
+    <div class="survey-bell__panel" id="surveyBellPanel" data-survey-bell-panel hidden>
+      <div class="survey-bell__header">
+        <span class="survey-bell__title">
+          <i class="bi bi-clipboard2-pulse-fill" aria-hidden="true"></i> Encuestas
+        </span>
+        <span class="survey-bell__count">
+          {{ contador_encuestas_pendientes }} pendiente{{ contador_encuestas_pendientes|pluralize }}
+        </span>
+      </div>
+
+      <div class="survey-bell__body">
+        {% for enc in encuestas_pendientes %}
+          <div class="survey-bell__item">
+            <p class="survey-bell__title-enc">{{ enc.titulo_publico }}</p>
+            {% if enc.descripcion %}
+              <p class="survey-bell__desc">{{ enc.descripcion }}</p>
+            {% endif %}
+            <span class="survey-bell__tipo survey-bell__tipo-{{ enc.tipo_encuesta }}">
+              {% if enc.tipo_encuesta == 'fija' %}Fija{% else %}Campaña{% endif %}
+            </span>
+            <a class="survey-bell__responder" href="{{ enc.url_votar }}">
+              <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>
+              Responder
+              <i class="bi bi-arrow-right ms-auto" aria-hidden="true"></i>
+            </a>
+          </div>
+        {% empty %}
+          <p class="survey-bell__desc">Tienes encuestas pendientes por responder.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</li>
+{% endif %}

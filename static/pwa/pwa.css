@@ -1,0 +1,93 @@
+/* PWA: botón "Instalar app" e aviso para iOS. */
+
+.pwa-install {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 4800;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .7rem 1.25rem;
+  border: 0;
+  border-radius: 2rem;
+  background: #E63946;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: .95rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(230, 57, 70, .45);
+  animation: pwa-install-pop .35s cubic-bezier(.16, 1, .3, 1);
+}
+
+.pwa-install:hover { filter: brightness(1.06); }
+.pwa-install:active { transform: translateX(-50%) scale(.97); }
+
+@keyframes pwa-install-pop {
+  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes pwa-install-pop-mobile {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 575.98px) {
+  .pwa-install {
+    left: auto;
+    right: calc(1.25rem + env(safe-area-inset-right, 0px));
+    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    transform: none;
+    animation-name: pwa-install-pop-mobile;
+  }
+  .pwa-install:hover { transform: none; }
+  .pwa-install:active { transform: scale(.97); }
+}
+
+/* Aviso para iOS: Compartir → Añadir a pantalla de inicio. */
+.pwa-ios-hint {
+  position: fixed;
+  left: calc(1.25rem + env(safe-area-inset-left, 0px));
+  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  z-index: 4800;
+  max-width: 300px;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  background: #111;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: .85rem;
+  line-height: 1.5;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .4);
+  animation: pwa-install-pop-mobile .35s cubic-bezier(.16, 1, .3, 1);
+}
+
+.pwa-ios-hint .pwa-ios-hint__icon {
+  display: inline-block;
+  padding: 0 .3rem;
+  border: 1px solid rgba(255, 255, 255, .4);
+  border-radius: 6px;
+  transform: rotate(-90deg);
+  font-size: .82rem;
+}
+
+.pwa-ios-hint__close {
+  position: absolute;
+  top: .5rem;
+  right: .55rem;
+  line-height: 1;
+  background: none;
+  border: 0;
+  color: rgba(255, 255, 255, .75);
+  font-size: .9rem;
+  cursor: pointer;
+}
+
+.pwa-ios-hint__close:hover { color: #fff; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pwa-install, .pwa-ios-hint { animation: none; }
+}

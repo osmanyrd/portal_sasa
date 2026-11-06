@@ -1,0 +1,55 @@
+{% load static wagtailimages_tags %}
+
+{# ── Botón flotante ── #}
+<button class="mapa-fab" id="mapaFabBtn" aria-label="Abrir mapa de dependencias" title="Mapa de dependencias">
+  <i class="bi bi-geo-alt-fill"></i>
+</button>
+
+{# ── Modal del mapa ── #}
+<div class="mapa-modal-overlay" id="mapaModal" role="dialog" aria-modal="true" aria-label="Mapa interactivo de dependencias" hidden>
+  <div class="mapa-modal">
+    <div class="mapa-modal__header">
+      <h2><i class="bi bi-geo-alt me-2"></i>Mapa de Dependencias</h2>
+      <button class="mapa-modal__close" id="mapaModalClose" aria-label="Cerrar mapa">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="mapa-modal__body">
+      {# Lado izquierdo: imagen del mapa + pines #}
+      <div class="mapa-modal__mapa">
+        <div class="mapa-toolbar">
+          <label class="mapa-toolbar__label" for="mapaFiltro">Filtrar por provincia</label>
+          <select id="mapaFiltro" class="mapa-toolbar__select" aria-label="Filtrar dependencias por provincia">
+            <option value="">Todas las provincias</option>
+          </select>
+        </div>
+        <div class="mapa-imagen-wrapper" id="mapaWrapper">
+          <img id="mapaImagen" class="mapa-imagen" alt="Mapa de Cuba" loading="eager">
+          <div class="mapa-pins" id="mapaPins"></div>
+          <div class="mapa-tooltip" id="mapaTooltip">
+            <div class="mapa-tooltip__nombre" id="tooltipNombre"></div>
+            <div class="mapa-tooltip__provincia" id="tooltipProvincia"></div>
+          </div>
+        </div>
+      </div>
+
+      {# Lado derecho: panel de detalle #}
+      <div class="mapa-modal__panel">
+        <div class="mapa-panel" id="mapaPanel">
+          <div class="mapa-panel__empty" id="panelEmpty">
+            <i class="bi bi-geo-alt"></i>
+            <h3>Selecciona un marcador</h3>
+            <p>Haz clic en un pin del mapa para ver los detalles de la dependencia.</p>
+          </div>
+          <div class="mapa-panel__content" id="panelContent" style="display:none;">
+            <div class="mapa-panel__header" id="panelHeader"></div>
+            <div class="mapa-panel__body" id="panelBody"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'mapa/js/mapa_modal.js' %}"></script>

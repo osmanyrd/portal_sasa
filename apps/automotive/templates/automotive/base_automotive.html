@@ -1,0 +1,398 @@
+{% load static wagtailimages_tags wagtailcore_tags survey_tags mapa_tags automotive_tags wagtailsettings_tags %}<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{% if page %}{{ page.title }}{% endif %}{% endblock %} | Servicios Automotores S.A</title>
+
+  {% comment %}Meta tags dinámicos: description, canonical, Open Graph y Twitter Card.{% endcomment %}
+  {% block seo_meta %}
+  {% with request.build_absolute_uri as pagina_url %}
+  <link rel="canonical" href="{{ pagina_url }}">
+  <meta property="og:site_name" content="Servicios Automotores S.A">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:url" content="{{ pagina_url }}">
+  <meta property="og:locale" content="es_AR">
+  {% if page %}
+  <meta name="description" content="{% block meta_description %}{{ page.search_description|default:'Especialistas en mantenimiento, reparación y venta de vehículos. Confianza y calidad que garantizan tu movilidad.' }}{% endblock %}">
+  <meta property="og:title" content="{{ page.seo_title|default:page.title }}">
+  <meta property="og:description" content="{{ page.search_description|default:'Especialistas en mantenimiento, reparación y venta de vehículos.' }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ page.seo_title|default:page.title }}">
+  <meta name="twitter:description" content="{{ page.search_description|default:'Especialistas en mantenimiento, reparación y venta de vehículos.' }}">
+  {% else %}
+  <meta name="description" content="{% block meta_description_default %}Especialistas en mantenimiento, reparación y venta de vehículos. Confianza y calidad que garantizan tu movilidad.{% endblock %}">
+  {% endif %}
+  {% if settings.core.SiteSettings.logo %}
+    {% image settings.core.SiteSettings.logo fill-1200x630 as og_img %}
+    <meta property="og:image" content="{{ og_img.url }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="{{ settings.core.SiteSettings.logo.title }}">
+    <meta name="twitter:image" content="{{ og_img.url }}">
+  {% endif %}
+  {% endwith %}
+  {% endblock %}
+
+  {% comment %}Datos estructurados: Organización (AutoRepair) + BreadcrumbList.{% endcomment %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "AutoRepair",
+    "name": "Servicios Automotores S.A",
+    "url": "{{ request.build_absolute_uri|cut:request.path }}",
+    {% if settings.core.SiteSettings.logo %}
+    "logo": "{% image settings.core.SiteSettings.logo fill-512x512 as ld_logo %}{{ ld_logo.url }}",
+    {% endif %}
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "{{ settings.core.SiteSettings.address|default:'' }}",
+      "addressCountry": "AR"
+    },
+    "email": "{{ settings.core.SiteSettings.contact_email|default:'' }}",
+    "telephone": "{{ settings.core.SiteSettings.phone|default:'' }}",
+    "priceRange": "$$"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "Inicio", "item": "{{ request.build_absolute_uri|cut:request.path }}"}
+    ]
+  }
+  </script>
+
+  {% if settings.core.SiteSettings.favicon %}
+    {% image settings.core.SiteSettings.favicon fill-64x64 as fav %}
+    <link rel="icon" href="{{ fav.url }}">
+  {% endif %}
+
+  <meta name="theme-color" content="#E63946">
+  {% comment %}PWA: manifest, icono de iOS y capacidades de app instalable.{% endcomment %}
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="{% static 'icons/apple-touch-icon.png' %}">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SASA">
+  <link href="{% static 'vendor/css/google-fonts.css' %}" rel="stylesheet">
+  <link href="{% static 'vendor/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendor/css/bootstrap-icons.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendor/css/leaflet.css' %}" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'automotive/css/automotive.css' %}">
+  <link rel="stylesheet" href="{% static 'surveys/css/surveys.css' %}">
+  <link rel="stylesheet" href="{% static 'mapa/css/mapa_modal.css' %}">
+  <link rel="stylesheet" href="{% static 'informaciones/css/informaciones.css' %}">
+  <link rel="stylesheet" href="{% static 'usuarios/css/usuarios.css' %}">
+  <link rel="stylesheet" href="{% static 'pwa/pwa.css' %}">
+  <link rel="stylesheet" href="{% static 'css/navbar-redesign.css' %}">
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+  <link rel="stylesheet" href="{% static 'css/search.css' %}">
+  {% block extra_css %}{% endblock %}
+
+  <script>document.documentElement.classList.add("has-js");</script>
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('theme')
+          || localStorage.getItem('sa-theme')
+          || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+        document.documentElement.setAttribute('data-bs-theme', t === 'light' ? 'light' : 'dark');
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+        document.documentElement.setAttribute('data-bs-theme', 'light');
+      }
+    })();
+  </script>
+  <script>
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'es',
+        includedLanguages: 'en,pt,fr,it,de,zh-CN,ja,ko,ru,ar',
+        layout: google.translate.TranslateElement.FloatPosition.NONE,
+        autoDisplay: false
+      }, 'google_translate_element');
+    }
+  </script>
+  <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" defer></script>
+  {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+  <script>(function(){var r=document.documentElement.getAttribute('data-theme');if(r){document.body.classList.toggle('dark-mode', r==='dark');}else{try{document.body.classList.toggle('dark-mode', document.documentElement.getAttribute('data-bs-theme') === 'dark');}catch(e){}}})();</script>
+  <a class="skip-link" href="#contenido-principal">Saltar al contenido principal</a>
+  <div id="google_translate_element" class="gt-hidden" aria-hidden="true"></div>
+
+  <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader-inner">
+      <div class="preloader-ring"></div>
+      {% navbar_logo_large as preloader_logo_url %}
+      {% if preloader_logo_url %}
+        <img src="{{ preloader_logo_url }}" alt="Logo de Servicios Automotores" class="preloader-logo">
+      {% else %}
+        <span class="preloader-brand">SA</span>
+      {% endif %}
+      <span class="preloader-text">Servicios Automotores</span>
+    </div>
+  </div>
+
+  <header class="navbar-sa" id="mainNav">
+    <div class="navbar-sa__container">
+      <a class="navbar-sa__logo" href="{% nav_anchor '#inicio' %}" aria-label="Servicios Automotores S.A — Inicio">
+        {% navbar_logo as logo_img_url %}
+        {% if logo_img_url %}
+          {% get_settings use_default_site=True as site_settings %}
+          <img src="{{ logo_img_url }}" alt="Servicios Automotores S.A | Servicios Automotores"
+               class="navbar-sa__logo-img{% if site_settings.core.SiteSettings.logo_rotacion %} brand-logo--spin{% endif %}">
+        {% else %}
+          <span class="brand-icon">SA</span>
+        {% endif %}
+        <span class="navbar-sa__logo-text">Servicios Automotores<small>Confianza que garantiza tu movilidad</small></span>
+      </a>
+
+      <nav class="navbar-sa__menu" id="navbarNav" aria-label="Navegación principal">
+        <ul>
+          <li><a class="nav-link active" href="{% nav_anchor '#inicio' %}">Inicio</a></li>
+          <li><a class="nav-link" href="{% nav_anchor '#nosotros' %}">Nosotros</a></li>
+          <li><a class="nav-link" href="{% nav_anchor '#servicios' %}">Servicios</a></li>
+          <li><a class="nav-link" href="/catalogo/">Catálogo</a></li>
+          <li><a class="nav-link" href="/foro/">Foro</a></li>
+          <li><a class="nav-link" href="{% nav_anchor '#acceso' %}">Ubicación</a></li>
+        </ul>
+      </nav>
+
+      <div class="navbar-sa__actions">
+        <div class="navbar-sa__search" id="navbarSearch" data-navbar-search>
+          <button class="navbar-sa__search-toggle" id="searchToggle" type="button" data-search-toggle
+                  aria-label="Buscar" aria-expanded="false" aria-controls="searchForm">
+            <i class="bi bi-search" aria-hidden="true"></i>
+          </button>
+          <form class="navbar-sa__search-form" id="searchForm" role="search" data-search-form aria-hidden="true" action="{% url 'buscar' %}" method="get">
+            <input type="search" id="searchInput" name="q" class="navbar-sa__search-input" data-search-input
+                   placeholder="Buscar en el sitio..." autocomplete="off"
+                   aria-label="Buscar en el sitio" maxlength="200">
+            <button type="submit" class="navbar-sa__search-submit" aria-label="Ejecutar búsqueda">
+              <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="navbar-sa__search-close" id="searchClose" data-search-close aria-label="Cerrar buscador">
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+          </form>
+        </div>
+        <span class="navbar-sa__bells" data-nav-bells>
+          {% include "informaciones/includes/navbar_bell.html" %}
+          {% include "surveys/includes/survey_bell.html" %}
+        </span>
+        <span class="navbar-sa__lang" id="langSelector">
+          <button class="navbar-sa__lang-toggle" type="button" aria-expanded="false"
+                  aria-haspopup="true" aria-label="Cambiar idioma del sitio">
+            <i class="bi bi-globe2" aria-hidden="true"></i>
+            <span class="navbar-sa__lang-label">ES</span>
+            <i class="bi bi-chevron-down navbar-sa__lang-chevron" aria-hidden="true"></i>
+          </button>
+          <div class="navbar-sa__lang-menu" role="menu" aria-label="Elegir idioma">
+            <button class="navbar-sa__lang-item is-active" type="button" role="menuitem" data-lang="es">
+              <img src="{% static 'vendor/flags/es.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Español
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="en">
+              <img src="{% static 'vendor/flags/gb.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> English
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="pt">
+              <img src="{% static 'vendor/flags/pt.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Português
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="fr">
+              <img src="{% static 'vendor/flags/fr.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Français
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="it">
+              <img src="{% static 'vendor/flags/it.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Italiano
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="de">
+              <img src="{% static 'vendor/flags/de.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Deutsch
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="zh-CN">
+              <img src="{% static 'vendor/flags/cn.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> 中文
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="ja">
+              <img src="{% static 'vendor/flags/jp.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> 日本語
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="ko">
+              <img src="{% static 'vendor/flags/kr.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> 한국어
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="ru">
+              <img src="{% static 'vendor/flags/ru.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Русский
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="ar">
+              <img src="{% static 'vendor/flags/sa.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> العربية
+            </button>
+          </div>
+        </span>
+        <button class="navbar-sa__theme" type="button" data-theme-toggle
+                aria-label="Cambiar tema" aria-pressed="false" title="Modo claro/oscuro">
+          <i class="bi bi-sun-fill navbar-sa__theme-sun" aria-hidden="true"></i>
+          <i class="bi bi-moon-stars-fill navbar-sa__theme-moon" aria-hidden="true"></i>
+        </button>
+        <span class="navbar-sa__user">
+          {% include "usuarios/includes/user_menu.html" %}
+        </span>
+        <button class="navbar-sa__hamburger" type="button" aria-expanded="false"
+                aria-controls="navDrawer" aria-label="Abrir menú">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="navbar-sa__overlay" id="navOverlay" hidden></div>
+  <aside class="navbar-sa__drawer" id="navDrawer" aria-hidden="true" aria-label="Menú lateral">
+    <div class="navbar-sa__drawer-header">
+      {% navbar_logo_large as drawer_logo_url %}
+      {% if drawer_logo_url %}
+        <img src="{{ drawer_logo_url }}" alt="Servicios Automotores S.A" class="navbar-sa__drawer-logo">
+      {% else %}
+        <span class="nav-drawer__brand">{{ SITE_NAME|default:'Servicios Automotores' }}</span>
+      {% endif %}
+      <button class="navbar-sa__drawer-close" type="button" aria-label="Cerrar menú">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="navbar-sa__drawer-body">
+      <form class="navbar-sa__drawer-search" data-drawer-search action="{% url 'buscar' %}" method="get" role="search">
+        <input type="search" name="q" placeholder="Buscar..." aria-label="Buscar en el sitio" maxlength="200">
+        <button type="submit" aria-label="Buscar"><i class="bi bi-search" aria-hidden="true"></i></button>
+      </form>
+
+      <ul class="navbar-sa__drawer-nav">
+        <li><a href="{% nav_anchor '#inicio' %}" {% if request.path == '/' %}class="active"{% endif %}><i class="bi bi-house-door" aria-hidden="true"></i> Inicio</a></li>
+        <li><a href="{% nav_anchor '#nosotros' %}"><i class="bi bi-buildings" aria-hidden="true"></i> Nosotros</a></li>
+        <li><a href="{% nav_anchor '#servicios' %}"><i class="bi bi-wrench-adjustable" aria-hidden="true"></i> Servicios</a></li>
+        <li><a href="/catalogo/" {% if request.path == '/catalogo/' %}class="active"{% endif %}><i class="bi bi-grid-3x3-gap" aria-hidden="true"></i> Catálogo</a></li>
+        <li><a href="/foro/" {% if request.path == '/foro/' %}class="active"{% endif %}><i class="bi bi-chat-dots" aria-hidden="true"></i> Foro</a></li>
+        <li><a href="{% nav_anchor '#acceso' %}"><i class="bi bi-geo-alt" aria-hidden="true"></i> Ubicación</a></li>
+      </ul>
+
+      <div class="navbar-sa__drawer-divider"></div>
+
+      {% if user.is_authenticated %}
+        <p class="navbar-sa__drawer-section-title">Mi cuenta</p>
+        <ul class="navbar-sa__drawer-nav">
+          <li><a href="{% url 'perfil' %}"><i class="bi bi-person" aria-hidden="true"></i> Mi perfil</a></li>
+          {% if user.is_staff %}
+          <li><a href="/cms/"><i class="bi bi-gear" aria-hidden="true"></i> Administración</a></li>
+          {% endif %}
+          <li><a href="{% url 'logout' %}"><i class="bi bi-box-arrow-left" aria-hidden="true"></i> Salir</a></li>
+        </ul>
+      {% else %}
+        <p class="navbar-sa__drawer-section-title">Acceso</p>
+        <ul class="navbar-sa__drawer-nav">
+          <li><a href="{% url 'login' %}"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Iniciar sesión</a></li>
+          <li><a href="{% url 'registro' %}"><i class="bi bi-person-plus" aria-hidden="true"></i> Registrarse</a></li>
+        </ul>
+      {% endif %}
+
+      <div class="navbar-sa__drawer-divider"></div>
+
+      <p class="navbar-sa__drawer-section-title">Idioma</p>
+      <span class="navbar-sa__lang navbar-sa__lang--drawer" id="langSelectorDrawer">
+        <span class="navbar-sa__lang-items">
+          <button class="navbar-sa__lang-item is-active" type="button" data-lang="es">
+            <img src="{% static 'vendor/flags/es.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Español
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="en">
+            <img src="{% static 'vendor/flags/gb.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> English
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="pt">
+            <img src="{% static 'vendor/flags/pt.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Português
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="fr">
+            <img src="{% static 'vendor/flags/fr.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Français
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="it">
+            <img src="{% static 'vendor/flags/it.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Italiano
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="de">
+            <img src="{% static 'vendor/flags/de.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Deutsch
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="zh-CN">
+            <img src="{% static 'vendor/flags/cn.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> 中文
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="ja">
+            <img src="{% static 'vendor/flags/jp.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> 日本語
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="ko">
+            <img src="{% static 'vendor/flags/kr.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> 한국어
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="ru">
+            <img src="{% static 'vendor/flags/ru.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Русский
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="ar">
+            <img src="{% static 'vendor/flags/sa.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> العربية
+          </button>
+        </span>
+      </span>
+
+      <div class="navbar-sa__drawer-divider"></div>
+
+      {% with redes=settings.core.SiteSettings %}
+      <p class="navbar-sa__drawer-section-title">Redes sociales</p>
+      <div class="navbar-sa__drawer-social">
+        {% if redes.facebook_url %}<a href="{{ redes.facebook_url }}" target="_blank" rel="noopener" aria-label="Facebook"><i class="bi bi-facebook" aria-hidden="true"></i></a>{% endif %}
+        {% if redes.instagram_url %}<a href="{{ redes.instagram_url }}" target="_blank" rel="noopener" aria-label="Instagram"><i class="bi bi-instagram" aria-hidden="true"></i></a>{% endif %}
+        {% if redes.linkedin_url %}<a href="{{ redes.linkedin_url }}" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="bi bi-linkedin" aria-hidden="true"></i></a>{% endif %}
+        {% if redes.youtube_url %}<a href="{{ redes.youtube_url }}" target="_blank" rel="noopener" aria-label="YouTube"><i class="bi bi-youtube" aria-hidden="true"></i></a>{% endif %}
+      </div>
+      {% endwith %}
+    </div>
+  </aside>
+
+  {% include "includes/theme_banner.html" %}
+
+  <main id="contenido-principal">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include "informaciones/includes/toast.html" %}
+
+  {% include "includes/search_modal.html" %}
+
+  {% include "surveys/includes/survey_float.html" %}
+
+  <div class="modal fade" id="usuarioPerfilModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content"></div>
+    </div>
+  </div>
+
+  <script src="{% static 'vendor/js/bootstrap.bundle.min.js' %}" defer></script>
+  <script src="{% static 'vendor/js/leaflet.js' %}" defer></script>
+  <script src="{% static 'automotive/js/automotive.js' %}" defer></script>
+  <script src="{% static 'js/navbar.js' %}" defer></script>
+  <script src="{% static 'js/theme.js' %}" defer></script>
+  <script src="{% static 'js/search.js' %}" defer></script>
+  <script src="{% static 'informaciones/js/informaciones.js' %}" defer></script>
+  <script src="{% static 'surveys/js/surveys.js' %}" defer></script>
+  <script src="{% static 'usuarios/js/usuarios.js' %}" defer></script>
+  {% block extra_js %}{% endblock %}
+
+  {% mostrar_modal_encuesta %}
+  {% mapa_modal_flotante %}
+  {% include "chatbot/widget.html" %}
+
+  {% comment %}PWA: botón "Instalar app" e instrucciones para iOS (visibles según el navegador).{% endcomment %}
+  <button type="button" id="pwaInstallBtn" class="pwa-install" hidden>
+    <i class="bi bi-download" aria-hidden="true"></i> Instalar app
+  </button>
+  <div id="pwaIosHint" class="pwa-ios-hint" hidden role="note">
+    Para instalar en iPhone/iPad: tocá <b>Compartir</b>
+    <span class="pwa-ios-hint__icon" aria-hidden="true">&#8627;</span>
+    y luego <b>“Añadir a pantalla de inicio”</b>.
+    <button type="button" class="pwa-ios-hint__close" data-pwa-hint-close aria-label="Cerrar">&#10005;</button>
+  </div>
+  <script src="{% static 'pwa/pwa.js' %}" defer></script>
+</body>
+</html>

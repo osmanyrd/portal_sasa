@@ -1,0 +1,15 @@
+{% load i18n %}
+<div class="w-mb-4">
+  <form method="post" action="{% url 'catalogo_erp_probar_conexion' %}" class="w-inline">
+    {% csrf_token %}
+    {% if self.instance and self.instance.pk %}
+      <input type="hidden" name="id" value="{{ self.instance.pk }}">
+    {% endif %}
+    <button type="submit" class="button button-secondary button-small">
+      {% trans "Probar conexión" %}
+    </button>
+    <span class="help-text" style="margin-inline-start:.75rem;font-size:.85rem;">
+      {% trans "Comprueba que el ERP responde con estos datos (guardá primero los cambios)." %}
+    </span>
+  </form>
+</div>

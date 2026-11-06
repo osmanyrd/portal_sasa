@@ -1,0 +1,20 @@
+{% load wagtailimages_tags %}
+<section class="{{ design_classes }}">
+    <div class="container">
+        {% if value.heading %}
+            <h2 class="display-6 fw-bold text-center mb-5">{{ value.heading }}</h2>
+        {% endif %}
+        <div class="row g-3">
+            {% for item in value.images %}
+                <div class="col-6 {{ col_class }}">
+                    <figure class="gallery-item rounded-4 overflow-hidden shadow-sm mb-0 position-relative">
+                        {% image item.image fill-600x450 class="w-100 h-100 object-fit-cover" alt="{{ item.caption|default:value.heading }}" %}
+                        {% if item.caption %}
+                            <figcaption class="gallery-caption">{{ item.caption }}</figcaption>
+                        {% endif %}
+                    </figure>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>

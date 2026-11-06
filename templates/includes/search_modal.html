@@ -1,0 +1,27 @@
+{% load static %}
+<div class="search-modal" id="searchModal" role="dialog" aria-modal="true"
+     aria-labelledby="searchModalTitle" aria-hidden="true" hidden>
+  <div class="search-modal__overlay" data-search-overlay></div>
+  <div class="search-modal__content">
+    <div class="search-modal__header">
+      <h2 class="search-modal__title" id="searchModalTitle">Resultados para: <span data-search-query></span></h2>
+      <button type="button" class="search-modal__close" data-search-modal-close aria-label="Cerrar resultados de búsqueda">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <form class="search-modal__form" role="search" data-search-modal-form>
+      <i class="bi bi-search search-modal__form-icon" aria-hidden="true"></i>
+      <input type="search" class="search-modal__input" data-search-modal-input
+             placeholder="Refinar búsqueda..." autocomplete="off" aria-label="Refinar búsqueda" maxlength="200">
+    </form>
+
+    <div class="search-modal__status" data-search-status aria-live="polite"></div>
+
+    <div class="search-modal__body" data-search-results></div>
+
+    <div class="search-modal__footer">
+      <a href="{% url 'buscar' %}" class="search-modal__more" data-search-more hidden>Ver todos los resultados</a>
+    </div>
+  </div>
+</div>

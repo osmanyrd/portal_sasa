@@ -1,0 +1,69 @@
+{% load static %}
+{# Chatbot RAG — Widget flotante. Incluir con: {% include "chatbot/widget.html" %} #}
+<link rel="stylesheet" href="{% static 'chatbot/css/chatbot.css' %}">
+
+<button class="chatbot-trigger" id="chatbotTrigger" aria-label="Abrir chat de ayuda">
+    <i class="bi bi-chat-dots-fill chat-icon"></i>
+    <i class="bi bi-x-lg close-icon"></i>
+    <span class="badge-dot"></span>
+</button>
+
+<div class="chatbot-window" id="chatbotWindow">
+    <div class="chatbot-header">
+        <div class="bot-avatar" id="chatbotAvatar">SA</div>
+        <div class="bot-info">
+            <h6 id="chatbotName">Asistente Virtual</h6>
+            <small>Servicios Automotores S.A</small>
+        </div>
+        <span class="online-dot"></span>
+        <button type="button" class="chatbot-theme" id="chatbotTheme" aria-label="Cambiar tema" title="Cambiar tema claro/oscuro">
+            <i class="bi bi-moon-stars-fill ic-theme"></i>
+        </button>
+        <button type="button" class="chatbot-clear" id="chatbotClear" aria-label="Limpiar conversación" title="Limpiar conversación">
+            <i class="bi bi-trash3"></i>
+        </button>
+        <button type="button" class="chatbot-close" id="chatbotClose" aria-label="Cerrar chat" title="Cerrar chat">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <div class="chatbot-messages" id="chatbotMessages">
+        <div class="chat-typing" id="chatbotTyping">
+            <span></span><span></span><span></span>
+        </div>
+    </div>
+
+    {# Formulario de escalado a humano #}
+    <div class="chatbot-escalado" id="chatbotEscalado" hidden>
+        <div class="escalado-head">
+            <strong>¿Quieres hablar con un asesor?</strong>
+            <button type="button" class="escalado-close" id="chatbotEscaladoClose" aria-label="Cerrar">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <p class="escalado-note">Déjanos tus datos y un asesor humano te contactará lo antes posible.</p>
+        <input type="text" id="escaladoNombre" placeholder="Tu nombre (opcional)" maxlength="120">
+        <input type="tel" id="escaladoTelefono" placeholder="Teléfono (opcional)" maxlength="40">
+        <textarea id="escaladoMotivo" rows="3" maxlength="1500" placeholder="Cuéntanos cómo podemos ayudarte..."></textarea>
+        <button type="button" class="escalado-send" id="chatbotEscaladoSend">Solicitar contacto</button>
+    </div>
+
+    <div class="chatbot-input">
+        <input type="text"
+               id="chatbotInput"
+               placeholder="Escribe tu pregunta..."
+               maxlength="500"
+               autocomplete="off">
+        <button id="chatbotSend" aria-label="Enviar mensaje">
+            <i class="bi bi-send-fill"></i>
+        </button>
+    </div>
+
+    <div class="chatbot-footer">
+        <span id="chatbotFooterText">Respuestas con información del sitio web</span>
+    </div>
+</div>
+
+<div class="chatbot-backdrop" id="chatbotBackdrop"></div>
+
+<script src="{% static 'chatbot/js/chatbot.js' %}"></script>

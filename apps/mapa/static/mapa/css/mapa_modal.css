@@ -1,0 +1,684 @@
+/* ============================================
+   MAPA MODAL — Servicios Automotores
+   Paleta: blanco / negro / rojo #E63946
+   ============================================ */
+
+/* ── Floating Action Button ── */
+/* Columna inferior derecha (apilado): survey -> whatsapp -> mapa -> chatbot.
+   Posiciones elegidas para que ningún botón flotante se solape. */
+/* Botón negro como base; el anillo exterior (::after tipo? no: ::before)
+   muestra el conic-gradient con los colores de los tipos de dependencia.
+   --fab-anillo se actualiza desde JS según los tipos existentes. */
+.mapa-fab {
+  --fab-anillo: conic-gradient(#1a1a2e 0 100%);
+  position: fixed;
+  bottom: 10.5rem;
+  right: 1.5rem;
+  z-index: 4500;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: none;
+  background: var(--fab-anillo);
+  color: #fff;
+  font-size: 1.45rem;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .45);
+  transition: transform .2s, box-shadow .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Disco negro central: deja visible solo el anillo de colores del borde */
+.mapa-fab::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: #161616;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, .55);
+  pointer-events: none;
+}
+.mapa-fab .bi {
+  position: relative;
+  transition: transform .25s ease;
+}
+/* Safe-area (home indicator de iPhone) */
+.mapa-fab { bottom: calc(10.5rem + env(safe-area-inset-bottom, 0px)); }
+@media (max-width: 575.98px) {
+  .mapa-fab { bottom: 10rem; }
+  .mapa-fab { bottom: calc(10rem + env(safe-area-inset-bottom, 0px)); width: 54px; height: 54px; font-size: 1.3rem; }
+}
+.mapa-fab:hover {
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .6);
+}
+.mapa-fab:hover .bi {
+  transform: rotate(-8deg);
+}
+.mapa-fab:active {
+  transform: scale(1.02) translateY(1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .5);
+}
+.mapa-fab:focus-visible {
+  outline: 3px solid #E63946;
+  outline-offset: 3px;
+}
+
+/* Entrada inicial + anillo sonar (llamada de atención) */
+.mapa-fab {
+  animation: mapaFabIn .5s cubic-bezier(.16, 1, .3, 1) backwards;
+}
+.mapa-fab::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: mapaFabPing 2.6s ease-out infinite;
+}
+@keyframes mapaFabIn {
+  from { opacity: 0; transform: translateY(14px) scale(.8); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes mapaFabPing {
+  0%   { box-shadow: 0 0 0 0 rgba(230, 57, 70, .5); }
+  70%  { box-shadow: 0 0 0 14px rgba(230, 57, 70, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(230, 57, 70, 0); }
+}
+
+/* ── Modal overlay ── */
+.mapa-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  background: rgba(0, 0, 0, .65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(3px);
+  opacity: 1;
+  transition: opacity .28s ease;
+}
+.mapa-modal-overlay[hidden] {
+  display: none;
+}
+.mapa-modal-overlay:not([hidden]) {
+  animation: mapaOverlayIn .28s ease;
+}
+.mapa-modal-overlay.closing {
+  animation: none;
+  opacity: 0;
+}
+@keyframes mapaOverlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Modal box ── */
+.mapa-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 1200px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, .3);
+  opacity: 1;
+  transform: translateY(24px) scale(.96);
+  transition: opacity .34s cubic-bezier(.16, 1, .3, 1),
+              transform .34s cubic-bezier(.16, 1, .3, 1);
+}
+.mapa-modal-overlay:not([hidden]) .mapa-modal {
+  transform: translateY(0) scale(1);
+}
+.mapa-modal-overlay.closing .mapa-modal {
+  opacity: 0;
+  transform: translateY(16px) scale(.98);
+}
+
+/* ── Modal header ── */
+.mapa-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 2px solid #E63946;
+  background: #1a1a2e;
+  color: #fff;
+  flex-shrink: 0;
+}
+.mapa-modal__header h2 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 1.2rem;
+  margin: 0;
+}
+.mapa-modal__close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background .2s;
+}
+.mapa-modal__close:hover {
+  background: rgba(255, 255, 255, .15);
+}
+.mapa-modal__close:focus-visible {
+  outline: 2px solid #fff;
+}
+
+/* ── Modal body ── */
+.mapa-modal__body {
+  display: grid;
+  grid-template-columns: 1fr;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+/* Panel derecho: oculto hasta que se seleccione un pin del mapa */
+.mapa-modal__body--open {
+  grid-template-columns: 1fr 400px;
+}
+.mapa-modal__body--open .mapa-modal__panel {
+  display: block;
+  animation: mapaPanelReveal .4s cubic-bezier(.16, 1, .3, 1);
+}
+@keyframes mapaPanelReveal {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@media (max-width: 900px) {
+  .mapa-modal__body,
+  .mapa-modal__body--open {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+}
+
+/* ── Map side ── */
+.mapa-modal__mapa {
+  padding: 1rem;
+  overflow: auto;
+  background: #f0f0f0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Toolbar (province filter) ── */
+.mapa-toolbar {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .75rem;
+}
+.mapa-toolbar__label {
+  font-size: .85rem;
+  font-weight: 600;
+  color: #495057;
+  white-space: nowrap;
+}
+.mapa-toolbar__select {
+  flex: 1;
+  max-width: 260px;
+  padding: .45rem .75rem;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: .88rem;
+  background: #fff;
+  color: #212529;
+}
+.mapa-toolbar__select:focus {
+  outline: 2px solid #E63946;
+  border-color: #E63946;
+}
+
+/* ── Image wrapper ── */
+.mapa-imagen-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  margin: auto;
+}
+.mapa-imagen {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+  user-select: none;
+  -webkit-user-drag: none;
+  background: #fff;
+}
+
+/* ── Pins layer ── */
+.mapa-pins {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* ── Pin wrapper (contiene icono + badge) ── */
+.mapa-pin-wrapper {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  pointer-events: all;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  z-index: 2;
+  transition: transform .15s;
+}
+.mapa-pin-wrapper:hover {
+  transform: translate(-50%, -100%) scale(1.15);
+  z-index: 5;
+}
+.mapa-pin-wrapper:focus-visible {
+  outline: 3px solid #1a1a2e;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.mapa-pin-wrapper--activa {
+  transform: translate(-50%, -100%) scale(1.2);
+  z-index: 6;
+}
+
+/* Flotación mínima del pin (cada uno con su propio timing vía JS) */
+.mapa-pin-bob {
+  display: block;
+  animation: mapaPinFloat 3.2s ease-in-out infinite;
+}
+@keyframes mapaPinFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-3px) scale(1.05); }
+}
+.mapa-pin-wrapper:hover .mapa-pin-bob,
+.mapa-pin-wrapper--activa .mapa-pin-bob {
+  animation-play-state: paused;
+}
+
+/* ── Icono del pin (tag con forma de chincheta dividido por colores) ──
+   El glifo bi-geo-alt-fill se pinta con el conic-gradient de --pin-tipo
+   (fijado por JS según los tipos de dependencia de la provincia). */
+.mapa-pin-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  line-height: 1;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .35));
+  transition: filter .15s;
+}
+.mapa-pin-icon .bi {
+  background: var(--pin-tipo, #1a1a2e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.mapa-pin-wrapper--activa .mapa-pin-icon {
+  filter: drop-shadow(0 0 0 2px rgba(255, 255, 255, .55)) drop-shadow(0 3px 4px rgba(0, 0, 0, .4));
+}
+@media (max-width: 600px) {
+  .mapa-pin-icon { font-size: 1.5rem; }
+}
+
+/* ── Badge numérico en pin ── */
+.mapa-pin-badge {
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: #1a1a2e;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: .7rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .5);
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* ── Panel: title row + count + deps list ── */
+.mapa-panel__count {
+  display: inline-block;
+  background: #f0f0f0;
+  color: #495057;
+  font-size: .78rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-top: .25rem;
+}
+.mapa-panel__no-deps {
+  color: #adb5bd;
+  font-style: italic;
+  font-size: .9rem;
+  margin-top: .25rem;
+}
+.mapa-deps-list {
+  max-height: 50vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.mapa-deps-list::-webkit-scrollbar {
+  width: 5px;
+}
+.mapa-deps-list::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 3px;
+}
+.mapa-deps-list::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+.mapa-deps-list::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
+}
+
+/* ── Tarjeta de dependencia (modal, sin marco) ── */
+.dep-card {
+  background: #fff;
+  border: 0;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+  overflow: hidden;
+  margin-bottom: .75rem;
+  transition: box-shadow .25s, transform .25s;
+}
+.dep-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .12);
+  transform: translateY(-2px);
+}
+.dep-card__header {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .6rem .75rem .4rem;
+  border-bottom: 0;
+}
+.dep-card__number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 50%;
+  background: #E63946;
+  color: #fff;
+  font-size: .7rem;
+  font-weight: 800;
+}
+.dep-card__name {
+  font-weight: 700;
+  font-size: .92rem;
+  color: #1a1a2e;
+  margin: 0;
+  flex: 1;
+}
+.dep-card__badge {
+  display: inline-block;
+  background: #E63946;
+  color: #fff;
+  font-size: .65rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  white-space: nowrap;
+}
+.dep-card__foto {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  display: block;
+}
+.dep-card__desc {
+  font-size: .85rem;
+  color: #495057;
+  line-height: 1.5;
+  margin: .5rem 0;
+}
+.dep-card__meta {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: .8rem;
+  color: #6c757d;
+}
+.dep-card__meta li {
+  display: flex;
+  align-items: flex-start;
+  gap: .4rem;
+  margin-bottom: .3rem;
+}
+.dep-card__meta i {
+  color: #E63946;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.dep-card__meta a {
+  color: #E63946;
+  text-decoration: none;
+}
+.dep-card__meta a:hover {
+  text-decoration: underline;
+}
+
+/* ── Acciones de la tarjeta (Llamar / Cómo llegar) ── */
+.dep-card__actions {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  margin: .85rem 0 0;
+}
+.dep-card__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  padding: .6rem 1.1rem;
+  min-height: 44px;
+  border: none;
+  border-radius: 10px;
+  font-size: .88rem;
+  font-weight: 700;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .2s, background .2s, color .2s;
+}
+.dep-card__action i {
+  font-size: 1.15rem;
+}
+.dep-card__action:active {
+  transform: translateY(1px) scale(.98);
+}
+.dep-card__action:focus-visible {
+  outline: 3px solid rgba(230, 57, 70, .45);
+  outline-offset: 2px;
+}
+.dep-card__llamar {
+  background: linear-gradient(135deg, #ff4d5e 0%, #E63946 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(230, 57, 70, .35);
+}
+.dep-card__llamar:hover {
+  background: linear-gradient(135deg, #ff5b6b 0%, #d9202f 100%);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(230, 57, 70, .45);
+}
+.dep-card__llegar {
+  background: #fff;
+  color: #1a1a2e;
+  border: 2px solid #1a1a2e;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .06);
+}
+.dep-card__llegar:hover {
+  background: #1a1a2e;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(26, 26, 46, .25);
+}
+.dep-card__llegar i {
+  font-size: 1.15rem;
+}
+
+/* ── Tooltip ── */
+.mapa-tooltip {
+  position: absolute;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 7px 11px;
+  border-radius: 8px;
+  font-size: .8rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .15s;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .3);
+  max-width: 220px;
+  text-align: center;
+}
+.mapa-tooltip.visible {
+  opacity: 1;
+}
+.mapa-tooltip__nombre {
+  font-weight: 700;
+}
+.mapa-tooltip__provincia {
+  font-size: .72rem;
+  color: #f0a0a8;
+}
+
+/* ── Panel (right side) ── */
+.mapa-modal__panel {
+  display: none;
+  border-left: 1px solid #e9ecef;
+  overflow-y: auto;
+  background: #fff;
+}
+.mapa-panel {
+  padding: 1.25rem;
+  min-height: 200px;
+}
+.mapa-panel__empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #adb5bd;
+}
+.mapa-panel__empty i {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: .75rem;
+}
+.mapa-panel__empty h3 {
+  font-weight: 700;
+  color: #495057;
+  font-size: 1rem;
+  margin-bottom: .35rem;
+}
+.mapa-panel__empty p {
+  font-size: .88rem;
+}
+.mapa-panel__header {
+  margin-bottom: 1rem;
+  padding-bottom: .75rem;
+  border-bottom: 2px solid #E63946;
+}
+.mapa-panel__badge {
+  display: inline-block;
+  background: #1a1a2e;
+  color: #fff;
+  font-size: .7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: .35rem;
+}
+.mapa-panel__header h2 {
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: #1a1a2e;
+  margin: 0 0 .15rem;
+}
+.mapa-panel__tipo {
+  display: inline-block;
+  background: #E63946;
+  color: #fff;
+  font-size: .7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .mapa-modal {
+    max-height: 96vh;
+    border-radius: 12px;
+  }
+  .mapa-modal__mapa {
+    padding: .5rem;
+    max-height: 50vh;
+    overflow: auto;
+  }
+  .mapa-modal__panel {
+    border-left: none;
+    border-top: 1px solid #e9ecef;
+    max-height: 40vh;
+  }
+  .mapa-fab {
+    bottom: calc(1.25rem + 54px + 0.75rem);
+    right: 1.25rem;
+    width: 48px;
+    height: 48px;
+    font-size: 1.2rem;
+  }
+}
+@media (max-width: 500px) {
+  .mapa-modal__header h2 {
+    font-size: 1rem;
+  }
+  .mapa-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .mapa-toolbar__select {
+    max-width: 100%;
+  }
+  .mapa-panel__foto {
+    height: 130px;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .mapa-fab,
+  .mapa-fab::after,
+  .mapa-pin-bob {
+    animation: none !important;
+  }
+  .mapa-modal__body--open .mapa-modal__panel {
+    animation: none;
+  }
+}

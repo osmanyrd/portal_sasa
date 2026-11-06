@@ -1,0 +1,375 @@
+/* ============================================
+   PORTADA — Sección de dos columnas (Novedades / Informaciones)
+   Servicios Automotores S.A.
+   Paleta: blanco / negro / rojo #E63946
+   Fuente: Inter (cargada globalmente)
+   ============================================ */
+
+.portada-destacados {
+  padding-block: 4.5rem;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(0, 0, 0, .06);
+}
+
+/* ── Títulos de columna ── */
+.portada-col-titulo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.3rem;
+  color: #1a1a1a;
+  margin: 0 0 1.1rem;
+  padding-bottom: .5rem;
+  border-bottom: 3px solid #E63946;
+}
+.portada-col-titulo i { color: #E63946; font-size: 1.2rem; }
+
+/* ── Contenedor de cada columna (sin marco: transparencia total) ── */
+.portada-col {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  border: 0;
+}
+
+/* ── Entrada de bloques (solo con JS activo):
+      Novedades entra desde la derecha, Informaciones desde la izquierda.
+      La clase .is-visible la añade el IO de initPortadaBlocksReveal(). ── */
+.has-js .portada-col {
+  opacity: 0;
+  transition: opacity .6s ease, transform .9s cubic-bezier(.16, 1, .3, 1);
+  will-change: transform, opacity;
+}
+.has-js .portada-col--informaciones { transform: translateX(-130px); }
+.has-js .portada-col--novedades     { transform: translateX(130px); }
+.has-js .portada-col.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .has-js .portada-col {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Tarjeta ── */
+.portada-card {
+  position: relative;
+  display: flex;
+  height: 100%;
+  border: 1px solid var(--gray-light, rgba(0, 0, 0, .08));
+  border-radius: var(--radius, 1rem);
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .04);
+  transition: transform var(--transition, .3s), box-shadow var(--transition, .3s), border-color var(--transition, .3s);
+}
+.portada-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .45s cubic-bezier(.16, 1, .3, 1);
+  z-index: 4;
+}
+.portada-card__link {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+}
+.has-js .portada-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg, 0 1rem 2.5rem rgba(0, 0, 0, .12));
+  border-color: rgba(230, 57, 70, .28);
+}
+.portada-card:hover::before { transform: scaleX(1); }
+.portada-card:focus-within {
+  outline: 3px solid #E63946;
+  outline-offset: 2px;
+  border-radius: var(--radius, 1rem);
+}
+
+/* Imagen: zoom sutil al hover */
+.portada-card__media {
+  position: relative;
+  overflow: hidden;
+  background: #161616;
+  isolation: isolate;
+}
+/* Fondo desenfocado del thumbnail (imagen completa, no recortada) */
+.portada-card__thumb {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(18px) brightness(.55);
+  transform: scale(1.1);
+  z-index: 0;
+}
+.portada-card__thumb-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, .22);
+  z-index: 0;
+}
+.portada-card__img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  transition: transform .5s cubic-bezier(.16, 1, .3, 1);
+}
+.portada-card:hover .portada-card__img {
+  transform: scale(1.04);
+}
+/* Variantes de fondo/posición en las tarjetas (heredadas de la novedad).
+   'Desenfocado' (por defecto) deja ver el thumbnail con blur; las otras dos
+   reemplazan la imagen de fondo por un color/degradado sobrio. */
+.portada-card__media.fondo-negro { background: #000; }
+.portada-card__media.fondo-negro .portada-card__thumb { display: none; }
+.portada-card__media.fondo-degradado { background: linear-gradient(180deg, #242424 0%, #000 85%); }
+.portada-card__media.fondo-degradado .portada-card__thumb { display: none; }
+.portada-card__media.posicion-top .portada-card__img { object-position: center top; }
+.portada-card__media.posicion-bottom .portada-card__img { object-position: center bottom; }
+.portada-card__media.posicion-h-left .portada-card__img { object-position: left center; }
+.portada-card__media.posicion-h-right .portada-card__img { object-position: right center; }
+.portada-card__media.posicion-top.posicion-h-left .portada-card__img { object-position: left top; }
+.portada-card__media.posicion-top.posicion-h-right .portada-card__img { object-position: right top; }
+.portada-card__media.posicion-bottom.posicion-h-left .portada-card__img { object-position: left bottom; }
+.portada-card__media.posicion-bottom.posicion-h-right .portada-card__img { object-position: right bottom; }
+/* Destello (shine) que barre la imagen al hover */
+.portada-card__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.18) 50%, transparent 70%);
+  transform: translateX(-130%);
+  transition: transform .75s ease;
+}
+.portada-card:hover .portada-card__media::after,
+.portada-card:focus-within .portada-card__media::after {
+  transform: translateX(130%);
+}
+
+/* ── Ribbon de la tarjeta: etiqueta diagonal (esquina superior izquierda) ──
+   El color se puede elegir por novedad (estilo en línea). Si no se elige, se
+   usa el sugerido para el tipo: */
+.portada-card__ribbon {
+  position: absolute;
+  top: 22px;
+  left: -44px;
+  z-index: 3;
+  width: 190px;
+  padding: .4rem 0;
+  text-align: center;
+  transform: rotate(-45deg);
+  font-family: var(--font-heading);
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--accent, #E63946);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .28);
+  pointer-events: none;
+}
+.portada-card__ribbon--promocion   { background: #e63946; }
+.portada-card__ribbon--oferta      { background: #c1121f; }
+.portada-card__ribbon--rebaja      { background: #16a34a; }
+.portada-card__ribbon--noticia     { background: #0d6efd; }
+.portada-card__ribbon--lanzamiento { background: #7c3aed; }
+.portada-card__ribbon--empleo      { background: #0b7285; }
+.portada-card__ribbon--licitacion  { background: #495057; }
+
+/* ── Chincheta: indica que la información está fija ── */
+.portada-card__fija {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  background: rgba(255, 183, 3, .94);
+  color: #3a2a00;
+  border-radius: 999px;
+  padding: .28rem .65rem;
+  font-family: var(--font-body, 'Inter', sans-serif);
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+  pointer-events: none;
+}
+.portada-card__fija i { font-size: .85rem; }
+
+/* ── Modo horizontal (imagen al costado) ── */
+.portada-card--horizontal .portada-card__link {
+  flex-direction: row;
+  align-items: stretch;
+}
+.portada-card--horizontal .portada-card__media--lateral {
+  flex: 0 0 42%;
+  width: 42%;
+  min-height: 150px;
+}
+.portada-card--horizontal .portada-card__body {
+  padding: .9rem 1rem;
+}
+@media (max-width: 575.98px) {
+  .portada-card--horizontal .portada-card__link {
+    flex-direction: column;
+  }
+  .portada-card--horizontal .portada-card__media--lateral {
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+  }
+}
+
+/* ── Bloques apilados a todo lo ancho (tarjetas horizontales) ── */
+
+.portada-card__body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 1rem 1.1rem 1.1rem;
+}
+.portada-card__titulo {
+  font-family: var(--font-body, 'Inter', sans-serif);
+  font-weight: 700;
+  font-size: 1.02rem;
+  color: #111;
+  margin: 0 0 .4rem;
+  line-height: 1.3;
+}
+.portada-card__resumen {
+  font-family: var(--font-body, 'Inter', sans-serif);
+  font-size: .88rem;
+  color: #555;
+  margin: 0 0 .85rem;
+  flex-grow: 1;
+}
+
+/* Botón "Ver más" */
+.portada-card__ver {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  align-self: flex-start;
+  font-family: var(--font-body, 'Inter', sans-serif);
+  font-weight: 700;
+  font-size: .88rem;
+  color: #E63946;
+  border: 1.5px solid #E63946;
+  border-radius: 999px;
+  padding: .35rem .85rem;
+  transition: background .2s ease, color .2s ease;
+}
+.portada-card:hover .portada-card__ver,
+.portada-card:focus-within .portada-card__ver {
+  background: #E63946;
+  color: #fff;
+}
+.portada-card__ver i { transition: transform .2s ease; }
+.portada-card:hover .portada-card__ver i,
+.portada-card:focus-within .portada-card__ver i {
+  transform: translateX(3px);
+}
+
+/* ── Responsive ── */
+@media (max-width: 991.98px) {
+  .portada-col-titulo { margin-top: 1.5rem; }
+  .portada-card { --radius: .9rem; }
+}
+@media (max-width: 575.98px) {
+  .portada-destacados { padding-block: 3rem; }
+  .portada-col-titulo { font-size: 1.15rem; }
+  .portada-card__body { padding: .85rem .95rem .95rem; }
+  .portada-card__titulo { font-size: .98rem; }
+  .portada-card__ver { padding: .32rem .75rem; font-size: .84rem; }
+}
+
+/* ════════════════════════════════════════════════════════
+   MODO OSCURO (sección de tarjetas)
+   ════════════════════════════════════════════════════════ */
+body.dark-mode .portada-destacados { background: #0f0f0f; border-bottom-color: #262626; }
+body.dark-mode .portada-col { background: transparent; border-color: transparent; }
+body.dark-mode .portada-col-titulo { color: #f2f2f2; }
+body.dark-mode .portada-card { background: #1c1c1c; border-color: #333; box-shadow: none; }
+body.dark-mode .portada-card__media { background: #111; }
+body.dark-mode .portada-card__titulo { color: #f2f2f2; }
+body.dark-mode .portada-card__resumen { color: #b3b3b3; }
+body.dark-mode .portada-card__ver { color: #ff5c66; border-color: #ff5c66; }
+body.dark-mode .portada-card:hover .portada-card__ver,
+body.dark-mode .portada-card:focus-within .portada-card__ver { background: #E63946; color: #fff; }
+
+/* ════════════════════════════════════════════════════════
+   Barajado de tarjetas al aparecer (FLIP + wobble)
+   El JS mueve las columnas en el DOM y aplica transformadas
+   invertidas FLIP; el CSS anima el "cambio de mano".
+   ════════════════════════════════════════════════════════ */
+
+/* Columnas: objetivo del FLIP (transición resorte) */
+[data-shuffle] {
+  position: relative;
+}
+[data-shuffle] > .col {
+  position: relative;
+  will-change: transform;
+  transition: transform .72s cubic-bezier(.16, 1, .3, 1);
+}
+/* Tarjetas: temblor de "rifle" mientras se barajan.
+   --rz / --rzn se asignan alternados por JS para que cada
+   tarjeta vibre en direcciones opuestas. */
+[data-shuffle].is-shuffling .portada-card {
+  animation: portadaShuffleWobble .74s cubic-bezier(.16, 1, .3, 1);
+  will-change: transform;
+}
+@keyframes portadaShuffleWobble {
+  0%   { transform: rotate(0deg) scale(1); }
+  28%  { transform: rotate(var(--rz, 3deg)) scale(1.035); }
+  62%  { transform: rotate(var(--rzn, -3deg)) scale(1.04); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+/* Brillo que barre la sección al terminar de barajar */
+[data-shuffle].is-shuffled::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: 1rem;
+  background: linear-gradient(115deg, transparent 35%, rgba(230, 57, 70, .14) 50%, transparent 65%);
+  animation: portadaShuffleShine 1s ease forwards;
+  pointer-events: none;
+}
+@keyframes portadaShuffleShine {
+  from { transform: translateX(-120%); }
+  to   { transform: translateX(120%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-shuffle] > .col { transition: none; }
+  [data-shuffle].is-shuffling .portada-card { animation: none; }
+  .portada-card__img { transition: none; }
+  .portada-card:hover .portada-card__img { transform: none; }
+}

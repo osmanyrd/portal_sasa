@@ -1,0 +1,220 @@
+{% load static wagtailimages_tags site_tags wagtailsettings_tags %}
+<header class="navbar-sa" id="mainNav">
+    <div class="navbar-sa__container">
+      <a class="navbar-sa__logo" href="/" aria-label="{{ SITE_NAME }} — Inicio">
+        {% with logo=logo_sitio %}
+          {% if logo %}
+            {% image logo max-160x48 class="navbar-sa__logo-img" alt="{{ SITE_NAME }}" %}
+          {% else %}
+            {% with fallback_logo=settings.core.SiteSettings.logo %}
+              {% if fallback_logo %}
+                {% image fallback_logo max-160x48 class="navbar-sa__logo-img" alt="{{ SITE_NAME }}" %}
+              {% else %}
+                <span class="brand-icon">SA</span>
+                <span class="navbar-sa__logo-text">{{ SITE_NAME }}</span>
+              {% endif %}
+            {% endwith %}
+          {% endif %}
+        {% endwith %}
+      </a>
+
+      <nav class="navbar-sa__menu" id="navbarNav" aria-label="Navegación principal">
+        <ul>
+          {% main_menu as menu %}
+          {% for item in menu %}
+            <li>
+              <a class="nav-link {% if request.path == item.url or request.path|add:'/' == item.url %}active{% endif %}"
+                 href="{{ item.url }}">{{ item.title }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      </nav>
+
+      <div class="navbar-sa__actions">
+        <div class="navbar-sa__search" id="navbarSearch" data-navbar-search>
+          <button class="navbar-sa__search-toggle" id="searchToggle" type="button" data-search-toggle
+                  aria-label="Buscar" aria-expanded="false" aria-controls="searchForm">
+            <i class="bi bi-search" aria-hidden="true"></i>
+          </button>
+          <form class="navbar-sa__search-form" id="searchForm" role="search" data-search-form aria-hidden="true" action="{% url 'buscar' %}" method="get">
+            <input type="search" id="searchInput" name="q" class="navbar-sa__search-input" data-search-input
+                   placeholder="Buscar en el sitio..." autocomplete="off"
+                   aria-label="Buscar en el sitio" maxlength="200">
+            <button type="submit" class="navbar-sa__search-submit" aria-label="Ejecutar búsqueda">
+              <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="navbar-sa__search-close" id="searchClose" data-search-close aria-label="Cerrar buscador">
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+          </form>
+        </div>
+        <span class="navbar-sa__bells" data-nav-bells>
+          {% include "informaciones/includes/navbar_bell.html" %}
+          {% include "surveys/includes/survey_bell.html" %}
+        </span>
+        <span class="navbar-sa__lang" id="langSelector">
+          <button class="navbar-sa__lang-toggle" type="button" aria-expanded="false"
+                  aria-haspopup="true" aria-label="Cambiar idioma del sitio">
+            <i class="bi bi-globe2" aria-hidden="true"></i>
+            <span class="navbar-sa__lang-label">ES</span>
+            <i class="bi bi-chevron-down navbar-sa__lang-chevron" aria-hidden="true"></i>
+          </button>
+          <div class="navbar-sa__lang-menu" role="menu" aria-label="Elegir idioma">
+            <button class="navbar-sa__lang-item is-active" type="button" role="menuitem" data-lang="es">
+              <img src="{% static 'vendor/flags/es.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Español
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="en">
+              <img src="{% static 'vendor/flags/gb.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> English
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="pt">
+              <img src="{% static 'vendor/flags/pt.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Português
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="fr">
+              <img src="{% static 'vendor/flags/fr.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Français
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="it">
+              <img src="{% static 'vendor/flags/it.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Italiano
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="de">
+              <img src="{% static 'vendor/flags/de.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Deutsch
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="zh-CN">
+              <img src="{% static 'vendor/flags/cn.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> 中文
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="ja">
+              <img src="{% static 'vendor/flags/jp.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> 日本語
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="ko">
+              <img src="{% static 'vendor/flags/kr.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> 한국어
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="ru">
+              <img src="{% static 'vendor/flags/ru.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Русский
+            </button>
+            <button class="navbar-sa__lang-item" type="button" role="menuitem" data-lang="ar">
+              <img src="{% static 'vendor/flags/sa.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> العربية
+            </button>
+          </div>
+        </span>
+        <button class="navbar-sa__theme" type="button" data-theme-toggle
+                aria-label="Cambiar tema" aria-pressed="false" title="Modo claro/oscuro">
+          <i class="bi bi-sun-fill navbar-sa__theme-sun" aria-hidden="true"></i>
+          <i class="bi bi-moon-stars-fill navbar-sa__theme-moon" aria-hidden="true"></i>
+        </button>
+        <span class="navbar-sa__user">
+          {% include "usuarios/includes/user_menu.html" %}
+        </span>
+        <button class="navbar-sa__hamburger" type="button" aria-expanded="false"
+                aria-controls="navDrawer" aria-label="Abrir menú">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="navbar-sa__overlay" id="navOverlay" hidden></div>
+  <aside class="navbar-sa__drawer" id="navDrawer" aria-hidden="true" aria-label="Menú lateral">
+    <div class="navbar-sa__drawer-header">
+      {% with logo=logo_sitio %}
+        {% if logo %}
+          {% image logo max-160x48 class="navbar-sa__drawer-logo" alt="{{ SITE_NAME }}" %}
+        {% else %}
+          <span class="nav-drawer__brand">{{ SITE_NAME|default:'SB' }}</span>
+        {% endif %}
+      {% endwith %}
+      <button class="navbar-sa__drawer-close" type="button" aria-label="Cerrar menú">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="navbar-sa__drawer-body">
+      <form class="navbar-sa__drawer-search" data-drawer-search action="{% url 'buscar' %}" method="get" role="search">
+        <input type="search" name="q" placeholder="Buscar..." aria-label="Buscar en el sitio" maxlength="200">
+        <button type="submit" aria-label="Buscar"><i class="bi bi-search" aria-hidden="true"></i></button>
+      </form>
+
+      {% main_menu as menu %}
+      <ul class="navbar-sa__drawer-nav">
+        {% for item in menu %}
+          <li>
+            <a href="{{ item.url }}" {% if request.path == item.url or request.path|add:'/' == item.url %}class="active"{% endif %}>
+              <i class="bi bi-caret-right" aria-hidden="true"></i> {{ item.title }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+
+      <div class="navbar-sa__drawer-divider"></div>
+
+      {% if user.is_authenticated %}
+        <p class="navbar-sa__drawer-section-title">Mi cuenta</p>
+        <ul class="navbar-sa__drawer-nav">
+          <li><a href="{% url 'perfil' %}"><i class="bi bi-person" aria-hidden="true"></i> Mi perfil</a></li>
+          {% if user.is_staff %}
+          <li><a href="/cms/"><i class="bi bi-gear" aria-hidden="true"></i> Administración</a></li>
+          {% endif %}
+          <li><a href="{% url 'logout' %}"><i class="bi bi-box-arrow-left" aria-hidden="true"></i> Salir</a></li>
+        </ul>
+      {% else %}
+        <p class="navbar-sa__drawer-section-title">Acceso</p>
+        <ul class="navbar-sa__drawer-nav">
+          <li><a href="{% url 'login' %}"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Iniciar sesión</a></li>
+          <li><a href="{% url 'registro' %}"><i class="bi bi-person-plus" aria-hidden="true"></i> Registrarse</a></li>
+        </ul>
+      {% endif %}
+
+      <div class="navbar-sa__drawer-divider"></div>
+
+      <p class="navbar-sa__drawer-section-title">Idioma</p>
+      <span class="navbar-sa__lang navbar-sa__lang--drawer" id="langSelectorDrawer">
+        <span class="navbar-sa__lang-items">
+          <button class="navbar-sa__lang-item is-active" type="button" data-lang="es">
+            <img src="{% static 'vendor/flags/es.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Español
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="en">
+            <img src="{% static 'vendor/flags/gb.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> English
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="pt">
+            <img src="{% static 'vendor/flags/pt.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Português
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="fr">
+            <img src="{% static 'vendor/flags/fr.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Français
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="it">
+            <img src="{% static 'vendor/flags/it.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Italiano
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="de">
+            <img src="{% static 'vendor/flags/de.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Deutsch
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="zh-CN">
+            <img src="{% static 'vendor/flags/cn.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> 中文
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="ja">
+            <img src="{% static 'vendor/flags/jp.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> 日本語
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="ko">
+            <img src="{% static 'vendor/flags/kr.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> 한국어
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="ru">
+            <img src="{% static 'vendor/flags/ru.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> Русский
+          </button>
+          <button class="navbar-sa__lang-item" type="button" data-lang="ar">
+            <img src="{% static 'vendor/flags/sa.png' %}" alt="" width="20" height="15" loading="lazy" class="navbar-sa__lang-flag-sm"> العربية
+          </button>
+        </span>
+      </span>
+
+      <div class="navbar-sa__drawer-divider"></div>
+
+      {% with ss=settings.core.SiteSettings %}
+      <p class="navbar-sa__drawer-section-title">Redes sociales</p>
+      <div class="navbar-sa__drawer-social">
+        {% if ss.facebook_url %}<a href="{{ ss.facebook_url }}" target="_blank" rel="noopener" aria-label="Facebook"><i class="bi bi-facebook" aria-hidden="true"></i></a>{% endif %}
+        {% if ss.instagram_url %}<a href="{{ ss.instagram_url }}" target="_blank" rel="noopener" aria-label="Instagram"><i class="bi bi-instagram" aria-hidden="true"></i></a>{% endif %}
+        {% if ss.linkedin_url %}<a href="{{ ss.linkedin_url }}" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="bi bi-linkedin" aria-hidden="true"></i></a>{% endif %}
+        {% if ss.youtube_url %}<a href="{{ ss.youtube_url }}" target="_blank" rel="noopener" aria-label="YouTube"><i class="bi bi-youtube" aria-hidden="true"></i></a>{% endif %}
+      </div>
+      {% endwith %}
+    </div>
+  </aside>

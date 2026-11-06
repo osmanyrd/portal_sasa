@@ -1,0 +1,26 @@
+{% extends "automotive/base_automotive.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'usuarios/css/usuarios.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-wrap__bg" aria-hidden="true"></div>
+  <div class="container auth-wrap__inner">
+    {% if messages %}
+    <div class="auth-messages mb-3">
+      {% for msg in messages %}
+        <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
+          {{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block auth_card %}{% endblock %}
+  </div>
+</div>
+{% endblock %}

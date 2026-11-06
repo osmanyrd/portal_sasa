@@ -1,0 +1,831 @@
+/* ============================================
+   NAVBAR SA — Rediseño completo
+   Servicios Automotores S.A
+   Paleta: blanco / negro / rojo #E63946
+   ============================================ */
+
+/* ── Variables del navbar ──
+   Tema OSCURO: navbar negro con letras/iconos blancos
+   (igual que el navbar original de Servicios Automotores). */
+:root {
+  --navbar-height: 72px;
+  --navbar-height-mobile: 56px;
+  --navbar-z: 4400;
+  --navbar-bg: #000000;
+  --navbar-border: rgba(255,255,255,.16);
+  --navbar-shadow: 0 1px 8px rgba(0,0,0,.35);
+  --navbar-shadow-scrolled: 0 2px 12px rgba(0,0,0,.45);
+  --navbar-accent: #E63946;
+  --navbar-accent-dark: #B71C2C;
+  --navbar-text: #ffffff;
+  --navbar-text-muted: rgba(255,255,255,.68);
+  --navbar-radius: 10px;
+  --navbar-transition: .25s cubic-bezier(.4,0,.2,1);
+  --drawer-width: 320px;
+  /* Dropdowns: tarjetas claras que flotan sobre el navbar oscuro */
+  --navbar-dropdown-bg: #ffffff;
+  --navbar-dropdown-text: #1a1a2e;
+  --navbar-dropdown-muted: #6c757d;
+}
+
+/* ── Skip link ── */
+.sa-skip-link {
+  position: absolute; left: -9999px; top: 0; z-index: 9999;
+  background: var(--navbar-accent); color: #fff;
+  font-weight: 600; padding: .75rem 1.25rem;
+  border-radius: 0 0 var(--navbar-radius) 0;
+  text-decoration: none;
+}
+.sa-skip-link:focus { left: 0; color: #fff; }
+
+/* ============================================
+   HEADER / NAVBAR
+   ============================================ */
+.navbar-sa {
+  position: sticky; top: 0; z-index: var(--navbar-z);
+  background: var(--navbar-bg);
+  height: var(--navbar-height);
+  transition: box-shadow var(--navbar-transition);
+  border-bottom: 1px solid var(--navbar-border);
+}
+.navbar-sa.is-scrolled {
+  box-shadow: var(--navbar-shadow-scrolled);
+}
+.navbar-sa__container {
+  display: flex; align-items: center; justify-content: space-between;
+  max-width: 1280px; margin: 0 auto;
+  height: 100%; padding: 0 1.5rem;
+}
+
+/* ── Logo ── */
+.navbar-sa__logo {
+  display: flex; align-items: center; gap: .6rem;
+  text-decoration: none; color: var(--navbar-text);
+  flex-shrink: 0; margin-right: 2rem;
+}
+.navbar-sa__logo img {
+  height: 40px; width: auto; object-fit: contain;
+}
+.navbar-sa__logo-text {
+  font-family: var(--font-heading, 'Inter', sans-serif);
+  font-weight: 700; font-size: 1rem; color: var(--navbar-text);
+  line-height: 1.2;
+}
+.navbar-sa__logo-text small {
+  display: block; font-size: .7rem; font-weight: 500;
+  color: var(--navbar-text-muted); letter-spacing: .03em;
+}
+
+/* ── Menú centrado (desktop) ── */
+.navbar-sa__menu {
+  display: none; /* hidden on mobile */
+}
+.navbar-sa__menu ul {
+  display: flex; align-items: center; gap: .25rem;
+  list-style: none; margin: 0; padding: 0;
+}
+.navbar-sa__menu a {
+  display: block; padding: .5rem .85rem;
+  font-family: 'Inter', sans-serif;
+  font-size: .9rem; font-weight: 600;
+  color: var(--navbar-text);
+  text-decoration: none;
+  border-radius: var(--navbar-radius);
+  position: relative;
+  transition: color var(--navbar-transition), background var(--navbar-transition);
+}
+.navbar-sa__menu a::after {
+  content: ""; position: absolute; bottom: 4px; left: 50%;
+  width: 0; height: 2.5px;
+  background: var(--navbar-accent); border-radius: 2px;
+  transition: width var(--navbar-transition), left var(--navbar-transition);
+}
+.navbar-sa__menu a:hover {
+  color: var(--navbar-accent);
+  background: rgba(230,57,70,.04);
+}
+.navbar-sa__menu a:hover::after,
+.navbar-sa__menu a.active::after {
+  width: calc(100% - 1.7rem); left: .85rem;
+}
+.navbar-sa__menu a.active {
+  color: var(--navbar-accent);
+}
+
+/* ── Acciones (derecha) ── */
+.navbar-sa__actions {
+  display: flex; align-items: center; gap: .5rem;
+  flex-shrink: 0;
+}
+
+/* ── Botón de acción (icono genérico) ── */
+.navbar-sa__btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; padding: 0;
+  border: none; border-radius: 50%;
+  background: transparent; color: var(--navbar-text);
+  font-size: 1.15rem; cursor: pointer;
+  position: relative;
+  transition: background var(--navbar-transition), color var(--navbar-transition);
+}
+.navbar-sa__btn:hover {
+  background: rgba(255,255,255,.12);
+}
+.navbar-sa__btn:focus-visible {
+  outline: 2px solid var(--navbar-accent);
+  outline-offset: 2px;
+}
+
+/* ── Badge (notifications/surveys) ── */
+.navbar-sa__badge {
+  position: absolute; top: 2px; right: 2px;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  background: var(--navbar-accent); color: #fff;
+  font-size: .65rem; font-weight: 700; line-height: 18px;
+  text-align: center; border-radius: 9px;
+  border: 2px solid var(--navbar-bg);
+  pointer-events: none;
+}
+
+/* ── Buscador compacto (desktop) ── */
+.navbar-sa__search {
+  display: none; /* hidden on mobile/tablet */
+  position: relative;
+}
+.navbar-sa__search-input {
+  width: 0; padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--navbar-radius);
+  font-family: 'Inter', sans-serif; font-size: .85rem;
+  background: transparent; color: var(--navbar-text);
+  transition: width .3s cubic-bezier(.4,0,.2,1), padding .3s, border-color .3s;
+  outline: none;
+}
+.navbar-sa__search.is-open .navbar-sa__search-input {
+  width: 220px; padding: .5rem 2.5rem .5rem .85rem;
+  border-color: var(--navbar-border);
+  background: rgba(255,255,255,.08);
+}
+.navbar-sa__search-input::placeholder { color: var(--navbar-text-muted); }
+.navbar-sa__search-input:focus {
+  border-color: var(--navbar-accent);
+  box-shadow: 0 0 0 3px rgba(230,57,70,.1);
+}
+.navbar-sa__search-btn {
+  position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  border: none; background: transparent;
+  color: var(--navbar-text-muted); cursor: pointer;
+  font-size: 1rem; border-radius: 50%;
+  transition: color var(--navbar-transition), background var(--navbar-transition);
+}
+.navbar-sa__search-btn:hover {
+  color: var(--navbar-accent);
+  background: rgba(230,57,70,.15);
+}
+
+/* ── Botón Acceder (rojo) ── */
+.navbar-sa__auth {
+  display: inline-flex; align-items: center; gap: .45rem;
+  padding: .5rem 1.15rem;
+  background: var(--navbar-accent); color: #fff;
+  border: none; border-radius: 8px;
+  font-family: 'Inter', sans-serif; font-size: .85rem; font-weight: 600;
+  text-decoration: none; cursor: pointer;
+  transition: background var(--navbar-transition), transform var(--navbar-transition), box-shadow var(--navbar-transition);
+  white-space: nowrap;
+}
+.navbar-sa__auth:hover {
+  background: var(--navbar-accent-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(230,57,70,.25);
+  color: #fff;
+}
+.navbar-sa__auth:active { transform: translateY(0) scale(.98); }
+.navbar-sa__auth:focus-visible {
+  outline: 2px solid var(--navbar-accent);
+  outline-offset: 2px;
+}
+
+/* ── Menú de usuario autenticado ── */
+.navbar-sa__user {
+  position: relative;
+}
+.navbar-sa__user-toggle {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .3rem .6rem .3rem .3rem;
+  border: 2px solid var(--navbar-border); border-radius: 50px;
+  background: rgba(255,255,255,.1); cursor: pointer;
+  font-family: 'Inter', sans-serif; font-size: .82rem; font-weight: 500;
+  color: var(--navbar-text);
+  transition: border-color var(--navbar-transition), background var(--navbar-transition);
+}
+.navbar-sa__user-toggle:hover {
+  border-color: var(--navbar-accent);
+  background: rgba(255,255,255,.18);
+}
+.navbar-sa__user-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  object-fit: cover; border: 2px solid #fff;
+}
+.navbar-sa__user-avatar-placeholder {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--navbar-accent); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: .8rem;
+}
+.navbar-sa__user-name { display: none; }
+.navbar-sa__user-chevron {
+  font-size: .6rem; color: var(--navbar-text-muted);
+  transition: transform .2s;
+}
+.navbar-sa__user.is-open .navbar-sa__user-chevron {
+  transform: rotate(180deg);
+}
+.navbar-sa__user-dropdown {
+  position: absolute; top: calc(100% + .5rem); right: 0;
+  min-width: 200px; background: var(--navbar-dropdown-bg);
+  border-radius: var(--navbar-radius);
+  box-shadow: 0 12px 40px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.15);
+  border: 1px solid rgba(0,0,0,.08);
+  padding: .35rem; z-index: 1100;
+  display: none;
+  animation: sa-dropdown-in .15s ease-out;
+  color: var(--navbar-dropdown-text);
+}
+.navbar-sa__user.is-open .navbar-sa__user-dropdown { display: block; }
+.navbar-sa__user-header {
+  padding: .65rem .75rem .5rem;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: .25rem;
+}
+.navbar-sa__user-header strong { display: block; font-size: .85rem; color: var(--navbar-dropdown-text); }
+.navbar-sa__user-header small { color: var(--navbar-dropdown-muted); font-size: .75rem; }
+.navbar-sa__user-link {
+  display: flex; align-items: center; gap: .55rem;
+  padding: .5rem .65rem; border-radius: 6px;
+  font-size: .85rem; color: var(--navbar-dropdown-text);
+  text-decoration: none; cursor: pointer;
+  border: none; background: none; width: 100%;
+  font-family: inherit; text-align: left;
+  transition: background var(--navbar-transition);
+}
+.navbar-sa__user-link:hover { background: #f0f0f0; }
+.navbar-sa__user-link--danger { color: var(--navbar-accent); }
+.navbar-sa__user-link--danger:hover { background: #fef2f2; }
+.navbar-sa__user-divider {
+  height: 1px; background: #f0f0f0;
+  margin: .25rem 0;
+}
+
+/* ── Selector de idioma ── */
+.navbar-sa__lang {
+  position: relative;
+}
+.navbar-sa__lang-toggle {
+  display: flex; align-items: center; gap: .35rem;
+  padding: .4rem .7rem;
+  border: 1.5px solid var(--navbar-border); border-radius: 50px;
+  background: transparent; cursor: pointer;
+  font-family: 'Inter', sans-serif; font-size: .8rem; font-weight: 500;
+  color: var(--navbar-text);
+  transition: border-color var(--navbar-transition), background var(--navbar-transition);
+}
+.navbar-sa__lang-toggle:hover {
+  border-color: var(--navbar-text);
+  background: rgba(255,255,255,.14);
+}
+.navbar-sa__lang-flag {
+  width: 18px; height: 13px; object-fit: cover;
+  border-radius: 2px; box-shadow: 0 0 2px rgba(0,0,0,.2);
+}
+.navbar-sa__lang-chevron {
+  font-size: .55rem; color: var(--navbar-text-muted);
+  transition: transform .2s;
+}
+.navbar-sa__lang.is-open .navbar-sa__lang-chevron {
+  transform: rotate(180deg);
+}
+.navbar-sa__lang-menu {
+  position: absolute; top: calc(100% + .5rem); right: 0;
+  min-width: 170px; max-height: 320px; overflow-y: auto;
+  background: var(--navbar-dropdown-bg); border-radius: var(--navbar-radius);
+  box-shadow: 0 12px 40px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.15);
+  border: 1px solid rgba(0,0,0,.08);
+  padding: .35rem; z-index: 1100;
+  display: none;
+  animation: sa-dropdown-in .15s ease-out;
+  color: var(--navbar-dropdown-text);
+}
+.navbar-sa__lang.is-open .navbar-sa__lang-menu { display: block; }
+.navbar-sa__lang-item {
+  display: flex; align-items: center; gap: .55rem;
+  width: 100%; padding: .45rem .6rem;
+  background: none; border: none; border-radius: 6px;
+  font-family: inherit; font-size: .82rem; color: var(--navbar-dropdown-text);
+  cursor: pointer; text-align: left;
+  transition: background .15s;
+}
+.navbar-sa__lang-item:hover { background: #f0f0f0; }
+.navbar-sa__lang-item.is-active {
+  background: #fef2f2; color: var(--navbar-accent); font-weight: 600;
+}
+.navbar-sa__lang-flag-sm {
+  width: 20px; height: 15px; object-fit: cover;
+  border-radius: 2px; box-shadow: 0 0 2px rgba(0,0,0,.2);
+  flex-shrink: 0;
+}
+
+/* ── Toggle de tema (claro/oscuro) ── */
+.navbar-sa__theme {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px;
+  border: 1.5px solid var(--navbar-border); border-radius: 50%;
+  background: transparent; cursor: pointer;
+  font-size: 1rem; color: var(--navbar-text);
+  transition: border-color var(--navbar-transition), background var(--navbar-transition), color var(--navbar-transition);
+}
+.navbar-sa__theme:hover {
+  border-color: var(--navbar-text);
+  background: rgba(255,255,255,.14);
+  color: var(--navbar-accent);
+}
+.navbar-sa__theme:focus-visible {
+  outline: 2px solid var(--navbar-accent);
+  outline-offset: 2px;
+}
+html[data-bs-theme="dark"] .navbar-sa__theme .navbar-sa__theme-sun { display: none; }
+html[data-bs-theme="light"] .navbar-sa__theme .navbar-sa__theme-moon { display: none; }
+
+@media (max-width: 767.98px) {
+  .navbar-sa__theme { width: 40px; height: 40px; }
+}
+
+/* ── Hamburger ── */
+.navbar-sa__hamburger {
+  display: none; /* visible only on mobile/tablet */
+  flex-direction: column; justify-content: center; align-items: center;
+  width: 40px; height: 40px; padding: 0;
+  border: none; background: transparent; cursor: pointer;
+  position: relative; z-index: calc(var(--navbar-z) + 20);
+}
+.navbar-sa__hamburger span {
+  display: block; width: 22px; height: 2px;
+  background: var(--navbar-text); border-radius: 2px;
+  transition: transform .3s cubic-bezier(.4,0,.2,1), opacity .2s;
+}
+.navbar-sa__hamburger span + span { margin-top: 5px; }
+.navbar-sa__hamburger[aria-expanded="true"] span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.navbar-sa__hamburger[aria-expanded="true"] span:nth-child(2) {
+  opacity: 0;
+}
+.navbar-sa__hamburger[aria-expanded="true"] span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ── Overlay ── */
+.navbar-sa__overlay {
+  position: fixed; inset: 0; z-index: calc(var(--navbar-z) + 500);
+  background: rgba(0,0,0,.4);
+  opacity: 0; visibility: hidden;
+  transition: opacity .3s, visibility .3s;
+  backdrop-filter: blur(2px);
+}
+.navbar-sa__overlay.is-visible {
+  opacity: 1; visibility: visible;
+}
+
+/* ── Drawer lateral ── */
+.navbar-sa__drawer {
+  position: fixed; top: 0; right: 0;
+  width: var(--drawer-width); max-width: 85vw;
+  height: 100vh; height: 100dvh;
+  background: #111318; z-index: calc(var(--navbar-z) + 501);
+  transform: translateX(100%);
+  transition: transform .35s cubic-bezier(.4,0,.2,1);
+  display: flex; flex-direction: column;
+  box-shadow: -8px 0 30px rgba(0,0,0,.45);
+  color: var(--navbar-text);
+}
+.navbar-sa__drawer.is-open {
+  transform: translateX(0);
+}
+.navbar-sa__drawer-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--navbar-border);
+  flex-shrink: 0;
+}
+.navbar-sa__drawer-logo {
+  height: 36px; width: auto;
+}
+.navbar-sa__drawer-close {
+  width: 36px; height: 36px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: none; border-radius: 50%; background: rgba(255,255,255,.1);
+  font-size: 1.1rem; color: var(--navbar-text); cursor: pointer;
+  transition: background var(--navbar-transition);
+}
+.navbar-sa__drawer-close:hover { background: rgba(255,255,255,.2); }
+.navbar-sa__drawer-body {
+  flex: 1; overflow-y: auto;
+  padding: 1rem 1.25rem 2rem;
+}
+.navbar-sa__drawer-nav {
+  list-style: none; padding: 0; margin: 0 0 1.25rem;
+}
+.navbar-sa__drawer-nav a {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .7rem .75rem; border-radius: 8px;
+  font-size: .95rem; font-weight: 600;
+  color: var(--navbar-text); text-decoration: none;
+  transition: background var(--navbar-transition), color var(--navbar-transition);
+}
+.navbar-sa__drawer-nav a:hover {
+  background: rgba(230,57,70,.18);
+  color: var(--navbar-accent);
+}
+.navbar-sa__drawer-nav a.active {
+  color: var(--navbar-accent);
+  background: rgba(230,57,70,.22);
+}
+.navbar-sa__drawer-nav i {
+  width: 20px; text-align: center;
+  color: var(--navbar-text-muted); font-size: 1.1rem;
+}
+.navbar-sa__drawer-nav a:hover i,
+.navbar-sa__drawer-nav a.active i {
+  color: var(--navbar-accent);
+}
+.navbar-sa__drawer-divider {
+  height: 1px; background: var(--navbar-border);
+  margin: .75rem 0;
+}
+.navbar-sa__drawer-section-title {
+  font-size: .7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--navbar-text-muted);
+  padding: .5rem .75rem .25rem; margin: 0;
+}
+.navbar-sa__drawer-search {
+  position: relative; margin-bottom: 1rem;
+}
+.navbar-sa__drawer-search input {
+  width: 100%; padding: .7rem 2.8rem .7rem 1rem;
+  border: 1.5px solid var(--navbar-border); border-radius: var(--navbar-radius);
+  font-family: 'Inter', sans-serif; font-size: .9rem;
+  background: rgba(255,255,255,.07); color: var(--navbar-text);
+  outline: none;
+  transition: border-color var(--navbar-transition), box-shadow var(--navbar-transition);
+}
+.navbar-sa__drawer-search input:focus {
+  border-color: var(--navbar-accent);
+  box-shadow: 0 0 0 3px rgba(230,57,70,.15);
+}
+.navbar-sa__drawer-search input::placeholder { color: var(--navbar-text-muted); }
+.navbar-sa__drawer-search button {
+  position: absolute; right: .5rem; top: 50%; transform: translateY(-50%);
+  width: 32px; height: 32px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: none; border-radius: 50%;
+  background: var(--navbar-accent); color: #fff;
+  font-size: .85rem; cursor: pointer;
+  transition: background var(--navbar-transition);
+}
+.navbar-sa__drawer-search button:hover { background: var(--navbar-accent-dark); }
+.navbar-sa__drawer-social {
+  display: flex; gap: .5rem; padding: .5rem .75rem;
+}
+.navbar-sa__drawer-social a {
+  display: flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: rgba(255,255,255,.08); color: var(--navbar-text-muted);
+  font-size: 1.1rem; text-decoration: none;
+  transition: background var(--navbar-transition), color var(--navbar-transition);
+}
+.navbar-sa__drawer-social a:hover {
+  background: var(--navbar-accent); color: #fff;
+}
+
+/* ── Idioma dentro del drawer (los items van sueltos, sin dropdown) ── */
+.navbar-sa__lang--drawer .navbar-sa__lang-items {
+  display: grid; gap: .2rem;
+}
+.navbar-sa__lang--drawer .navbar-sa__lang-item {
+  color: var(--navbar-text);
+}
+.navbar-sa__lang--drawer .navbar-sa__lang-item:hover {
+  background: rgba(255,255,255,.1);
+}
+.navbar-sa__lang--drawer .navbar-sa__lang-item.is-active {
+  background: rgba(230,57,70,.22);
+  color: var(--navbar-accent);
+}
+
+/* ── Dropdown animation ── */
+@keyframes sa-dropdown-in {
+  from { opacity: 0; transform: translateY(-4px) scale(.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Body lock ── */
+body.nav-drawer-open {
+  overflow: hidden;
+  position: fixed; width: 100%;
+}
+
+/* ============================================
+   OVERRIDES — componentes internos (bells, idioma, usuario)
+   Adaptan las clases existentes al fondo NEGRO del nuevo navbar
+   ============================================ */
+
+/* ── Bell de informaciones ── */
+.navbar-sa .info-bell-item,
+.navbar-sa .survey-bell-item {
+  display: flex; align-items: center; margin-left: 0 !important;
+}
+.navbar-sa .info-bell__btn,
+.navbar-sa .survey-bell__btn {
+  width: 40px; height: 40px;
+  border: none; border-radius: 50%;
+  background: transparent; color: var(--navbar-text);
+  font-size: 1.15rem;
+}
+.navbar-sa .info-bell__btn:hover,
+.navbar-sa .info-bell__btn[aria-expanded="true"],
+.navbar-sa .survey-bell__btn:hover,
+.navbar-sa .survey-bell__btn[aria-expanded="true"] {
+  background: rgba(255,255,255,.12);
+  color: var(--navbar-accent);
+}
+.navbar-sa .info-bell__badge,
+.navbar-sa .survey-bell__badge {
+  top: 2px; right: 2px;
+  min-width: 18px; height: 18px;
+  border: 2px solid var(--navbar-bg);
+  background: var(--navbar-accent);
+  color: #fff;
+  transform: none;
+}
+.navbar-sa .info-bell__btn:hover .info-bell__badge,
+.navbar-sa .info-bell__btn[aria-expanded="true"] .info-bell__badge,
+.navbar-sa .survey-bell__btn:hover .survey-bell__badge,
+.navbar-sa .survey-bell__btn[aria-expanded="true"] .survey-bell__badge {
+  background: var(--navbar-accent-dark);
+  color: #fff;
+}
+.navbar-sa .info-bell__panel,
+.navbar-sa .survey-bell__panel {
+  top: calc(100% + 10px); right: 0;
+  z-index: 1100;
+}
+
+/* ── Selector de idioma (clases existentes lang-select) ── */
+.navbar-sa .lang-select__toggle {
+  background: transparent;
+  border: 1.5px solid var(--navbar-border);
+  border-radius: 50px;
+  color: var(--navbar-text);
+}
+.navbar-sa .lang-select__toggle:hover,
+.navbar-sa .lang-select__toggle:focus-visible {
+  background: rgba(255,255,255,.14);
+  border-color: var(--navbar-text);
+}
+.navbar-sa .lang-select__menu {
+  z-index: 1100;
+}
+.navbar-sa .lang-select__item.is-active {
+  background: #fef2f2;
+  color: var(--navbar-accent);
+}
+
+/* ── Menú de usuario (clases existentes user-menu) ── */
+.navbar-sa .user-menu {
+  position: relative;
+}
+.navbar-sa .user-menu__toggle {
+  background: rgba(255,255,255,.1);
+  border: 2px solid var(--navbar-border);
+  border-radius: 50px;
+  color: var(--navbar-text);
+  padding: .2rem .55rem .2rem .2rem;
+}
+.navbar-sa .user-menu__toggle:hover {
+  border-color: var(--navbar-accent);
+  background: rgba(255,255,255,.18);
+}
+.navbar-sa .user-menu__name { color: var(--navbar-text); }
+.navbar-sa .user-menu__chevron { color: var(--navbar-text-muted); }
+.navbar-sa .user-menu__dropdown {
+  z-index: 1100;
+}
+
+/* ── Auth button dentro de user-menu anónimo: lo convertimos en botón rojo ── */
+.navbar-sa .navbar-sa__auth-badge { display: none; }
+
+@media (max-width: 767.98px) {
+  .navbar-sa .info-bell-item,
+  .navbar-sa .survey-bell-item { width: auto; }
+  .navbar-sa .info-bell__btn,
+  .navbar-sa .survey-bell__btn {
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+    gap: 0;
+    padding: 0;
+  }
+  .navbar-sa .lang-select__toggle { display: none; }
+}
+
+/* ============================================
+   RESPONSIVE — TABLET (768px–991px)
+   ============================================ */
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .navbar-sa__menu { display: none !important; }
+  .navbar-sa__hamburger { display: flex; }
+  .navbar-sa__search { display: none !important; }
+  .navbar-sa__auth-label { display: none; }
+  .navbar-sa__lang-toggle { display: flex; }
+  .navbar-sa__user-name { display: none !important; }
+  .navbar-sa__btn { display: inline-flex; }
+}
+
+/* ============================================
+   RESPONSIVE — MÓVIL (<768px)
+   ============================================ */
+@media (max-width: 767.98px) {
+  .navbar-sa { height: var(--navbar-height-mobile); }
+  .navbar-sa__container { padding: 0 1rem; }
+  .navbar-sa__actions { gap: .3rem; }
+  .navbar-sa__logo { margin-right: auto; }
+  .navbar-sa__logo-text { display: none; }
+  .navbar-sa__menu { display: none !important; }
+  .navbar-sa__hamburger { display: flex; }
+  .navbar-sa__search { display: none !important; }
+  .navbar-sa__auth { padding: .4rem .85rem; font-size: .8rem; }
+  .navbar-sa__auth-label { display: none; }
+  .navbar-sa__btn.navbar-sa__btn--hide-mobile { display: none; }
+  .navbar-sa__user-name { display: none !important; }
+  .navbar-sa__lang-toggle {
+    display: none; /* moves to drawer */
+  }
+}
+
+/* ============================================
+   RESPONSIVE — DESKTOP (≥992px)
+   ============================================ */
+@media (min-width: 992px) {
+  .navbar-sa__menu { display: block; }
+  .navbar-sa__hamburger { display: none; }
+  .navbar-sa__search { display: block; }
+  .navbar-sa__user-name { display: inline; }
+  .navbar-sa__drawer { display: none !important; }
+  .navbar-sa__overlay { display: none !important; }
+}
+
+/* ============================================
+   NEUTRALIZACIÓN — reglas legadas del navbar oscuro
+   (automotive.css / styles.css / usuarios.css / informaciones.css)
+   El navbar nuevo reutiliza #mainNav y .nav-link; hay que revertir
+   todas las reglas viejas con !important.
+   ============================================ */
+
+/* ── Fondo y padding del header (revertir #mainNav de automotive.css) ── */
+.navbar-sa#mainNav,
+.navbar-sa#mainNav.is-scrolled {
+  background: var(--navbar-bg) !important;
+  padding-block: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+.navbar-sa#mainNav.is-scrolled {
+  box-shadow: var(--navbar-shadow-scrolled) !important;
+}
+
+/* ── Links del menú (revertir .nav-link blanco) ── */
+.navbar-sa#mainNav .nav-link,
+.navbar-sa .nav-link {
+  color: var(--navbar-text) !important;
+  font-weight: 600;
+  font-size: .9rem;
+  padding: .5rem .85rem !important;
+  font-family: 'Inter', sans-serif;
+}
+.navbar-sa#mainNav .nav-link:hover,
+.navbar-sa#mainNav .nav-link.active,
+.navbar-sa .nav-link:hover,
+.navbar-sa .nav-link.active {
+  color: var(--navbar-accent) !important;
+}
+.navbar-sa#mainNav .nav-link::after,
+.navbar-sa .nav-link::after {
+  display: none;
+}
+
+/* ── Texto del logo (revertir .brand-name blanco) ── */
+.navbar-sa .navbar-sa__logo-text,
+.navbar-sa .navbar-sa__logo-text small,
+.navbar-sa .brand-name {
+  color: var(--navbar-text) !important;
+}
+.navbar-sa .brand-icon {
+  background: var(--navbar-accent);
+  color: #fff;
+}
+
+/* ── Consultas antiguas `.navbar` de styles.css (no aplican, por clase) ──
+   El navbar nuevo NO lleva la clase `.navbar`, así que esas reglas
+   quedan huérfanas. Se dejan tal cual por compatibilidad con otros layouts. */
+
+/* ============================================
+   RESPONSIVE EXTRA — legado en viewport <992px
+   Revierte width:100% / position:static que los includes
+   antiguos (bells/user-menu) usaban para el menú colapsable.
+   ============================================ */
+@media (max-width: 991.98px) {
+  /* Campanas: volver a su tamaño compacto dentro del header */
+  .navbar-sa .info-bell-item,
+  .navbar-sa .survey-bell-item {
+    width: auto !important;
+    margin-left: 0 !important;
+  }
+  .navbar-sa .info-bell__btn,
+  .navbar-sa .survey-bell__btn {
+    width: 40px !important;
+    height: 40px !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    padding: 0 !important;
+  }
+  .navbar-sa .info-bell__btn .info-bell__badge,
+  .navbar-sa .survey-bell__btn .survey-bell__badge {
+    position: absolute !important;
+    top: 2px !important;
+    right: 2px !important;
+    margin-left: 0 !important;
+    transform: none !important;
+  }
+
+  /* Selector de idioma: esconder toggle si aplica (se muda al drawer) */
+  .navbar-sa .lang-select__toggle { display: none; }
+
+  /* Menú de usuario: mantener compacto y dropdown flotante
+     (revertir width:100% + position:static de usuarios.css) */
+  .navbar-sa .user-menu {
+    width: auto !important;
+    margin-left: 0 !important;
+  }
+  .navbar-sa .user-menu__toggle {
+    width: auto !important;
+    justify-content: center !important;
+    padding: .2rem .55rem .2rem .2rem !important;
+  }
+  .navbar-sa .user-menu__name { display: none !important; }
+  .navbar-sa .user-menu__dropdown {
+    position: fixed !important;
+    min-width: 232px;
+    width: auto !important;
+    margin-top: 0 !important;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, .35), 0 2px 8px rgba(0, 0, 0, .18) !important;
+    background: #fff !important;
+    border-color: rgba(0, 0, 0, .08) !important;
+    animation: userMenuIn .18s ease-out !important;
+  }
+  .navbar-sa .user-menu__header {
+    background: linear-gradient(180deg, #fafafa, #f4f4f4) !important;
+    border-bottom-color: #f0f0f0 !important;
+  }
+  .navbar-sa .user-menu__header strong { color: #111 !important; }
+  .navbar-sa .user-menu__header small { color: #777 !important; }
+  .navbar-sa .user-menu__divider { background: #f0f0f0 !important; }
+  .navbar-sa .user-menu__link,
+  .navbar-sa .user-menu__link--btn {
+    color: #333 !important;
+  }
+  .navbar-sa .user-menu__link > i {
+    background: #f0f0f0 !important;
+    color: #444 !important;
+  }
+  .navbar-sa .user-menu__link--danger { color: #c1121f !important; }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .navbar-sa,
+  .navbar-sa__menu a::after,
+  .navbar-sa__hamburger span,
+  .navbar-sa__drawer,
+  .navbar-sa__overlay,
+  .navbar-sa__search-input,
+  .navbar-sa__user-dropdown,
+  .navbar-sa__lang-menu {
+    transition: none !important;
+    animation: none !important;
+  }
+}

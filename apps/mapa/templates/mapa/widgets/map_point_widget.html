@@ -1,0 +1,25 @@
+{% comment %}
+Widget MapPointWidget: input de coordenadas + selector Leaflet.
+
+El id del input ("{{ input_id }}") lo usa map_point_admin.js para actualizar
+el valor del formulario con lo que el usuario elija en el mapa.
+{% endcomment %}
+<div class="mapa-selector" data-mapa-selector data-map-input-id="{{ input_id }}" data-map-suffix="{{ suffix }}">
+  {{ input }}
+  <button type="button" class="mapa-selector__btn" data-map-open aria-haspopup="true" aria-expanded="false">
+    <span class="mapa-selector__btn-icon" aria-hidden="true">&#9678;</span>
+    Obtener coordenadas
+  </button>
+  <div class="mapa-selector__panel" data-map-panel hidden>
+    <div class="mapa-selector__canvas" data-map-canvas></div>
+    <div class="mapa-selector__footer">
+      <span class="mapa-selector__status" data-map-status>
+        Haz clic en el mapa para elegir el punto. Se copiará la latitud y longitud con 8 decimales.
+      </span>
+      <span class="mapa-selector__actions">
+        <button type="button" class="mapa-selector__link" data-map-clear>Limpiar</button>
+        <button type="button" class="mapa-selector__link" data-map-close>Cerrar</button>
+      </span>
+    </div>
+  </div>
+</div>

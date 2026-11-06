@@ -1,0 +1,22 @@
+{% load wagtailimages_tags %}
+<section class="{{ design_classes }}">
+    <div class="container">
+        {% if value.heading %}
+            <h2 class="display-6 fw-bold text-center mb-3">{{ value.heading }}</h2>
+        {% endif %}
+        {% if value.intro %}
+            <p class="lead text-secondary text-center mb-5">{{ value.intro }}</p>
+        {% endif %}
+        <div class="row g-4 justify-content-center">
+            {% for item in value.items %}
+                <div class="col-12 col-sm-6 {{ col_class }}">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 p-4 text-center card-hover">
+                        <span class="icon-bubble mx-auto mb-3"><i class="bi bi-{{ item.icon }}"></i></span>
+                        <h3 class="h5 fw-semibold">{{ item.title }}</h3>
+                        <p class="text-secondary small mb-0">{{ item.description }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>

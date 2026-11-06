@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load static wagtailimages_tags mapa_tags %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'vendor/css/bootstrap-icons.min.css' %}">
+<link rel="stylesheet" href="{% static 'mapa/css/mapa.css' %}">
+{% endblock %}
+
+{% block seo_title %}Mapa de Dependencias — Servicios Automotores S.A{% endblock %}
+
+{% block content %}
+<section class="mapa-hero">
+  <div class="container">
+    {% if page.imagen_portada %}
+    <div class="mapa-hero__img-wrap">
+      {% image page.imagen_portada fill-1200x400 format-webp %}
+    </div>
+    {% endif %}
+    <h1 class="mapa-hero__title">{{ page.title }}</h1>
+    {% if page.introduccion %}
+    <div class="mapa-hero__intro">{{ page.introduccion|safe }}</div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="mapa-main">
+  <div class="container-fluid">
+    <div class="mapa-layout">
+
+      <!-- Mapa SVG -->
+      <div class="mapa-layout__map">
+        <div class="mapa-container" id="mapaContainer">
+          {% render_mapa_cuba %}
+          <div class="mapa-tooltip" id="mapaTooltip"></div>
+        </div>
+        <p class="mapa-legend">
+          <span class="mapa-legend__dot"></span> Haz clic en una provincia para ver sus dependencias
+        </p>
+      </div>
+
+      <!-- Panel lateral -->
+      <div class="mapa-layout__panel" id="panelDependencias">
+        <div class="mapa-panel" id="mapaPanel">
+          <div class="mapa-panel__empty" id="panelEmpty">
+            <i class="bi bi-geo-alt"></i>
+            <h3>Selecciona una provincia</h3>
+            <p>Haz clic en el mapa para ver las dependencias de esa provincia.</p>
+          </div>
+          <div class="mapa-panel__content" id="panelContent" style="display:none;">
+            <div class="mapa-panel__header" id="panelHeader"></div>
+            <div class="mapa-panel__deps" id="panelDeps"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+  window.MAPA_DATA = {{ provincias_json|safe }};
+</script>
+<script src="{% static 'mapa/js/mapa.js' %}"></script>
+{% endblock %}

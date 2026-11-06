@@ -1,0 +1,179 @@
+{% load survey_render %}
+{# Componente interactivo de pregunta. Segun `tipo` se dibuja un control distinto.
+   El input oculto `name="{{ nombre }}"` es el que envía la respuesta real. #}
+
+{% if tipo == "simple" %}
+  {{ campo }}
+  {% if campo.errors %}<div class="text-danger small mt-2">{% for error in campo.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ error }}{% endfor %}</div>{% endif %}
+{% elif tipo == "multiple" %}
+  {{ campo }}
+  {% if campo.errors %}<div class="text-danger small mt-2">{% for error in campo.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ error }}{% endfor %}</div>{% endif %}
+{% elif tipo == "imagenes" %}
+  <input type="hidden" id="{{ nombre }}" name="{{ nombre }}" value="{{ valor_inicial|default:'' }}">
+  <div class="survey-img-grid" role="radiogroup" aria-label="{{ pregunta.texto }}">
+    {% for opcion in opciones %}
+      <button type="button" class="survey-img-card {% if valor_inicial == opcion.pk|stringformat:'s' or valor_inicial == opcion.pk %}is-selected{% endif %}"
+              data-valor="{{ opcion.pk }}" role="radio"
+              aria-checked="{% if valor_inicial == opcion.pk|stringformat:'s' or valor_inicial == opcion.pk %}true{% else %}false{% endif %}">
+        {% if opcion.imagen %}
+          <img src="{{ opcion.imagen.file.url }}" alt="{{ opcion.texto }}" loading="lazy">
+        {% elif opcion.emoji %}
+          <span class="survey-img-card__emoji">{{ opcion.emoji }}</span>
+        {% else %}
+          <span class="survey-img-card__icon"><i class="bi bi-image"></i></span>
+        {% endif %}
+        <span class="survey-img-card__label">{{ opcion.texto }}</span>
+      </button>
+    {% endfor %}
+  </div>
+
+{% elif tipo == "par" %}
+  <input type="hidden" id="{{ nombre }}" name="{{ nombre }}" value="{{ valor_inicial|default:'' }}">
+  <div class="survey-pares" role="radiogroup" aria-label="{{ pregunta.texto }}">
+    {% for opcion in opciones %}
+      <button type="button" class="survey-pares__card {% if valor_inicial == opcion.pk|stringformat:'s' or valor_inicial == opcion.pk %}is-selected{% endif %}"
+              data-valor="{{ opcion.pk }}" role="radio"
+              aria-checked="{% if valor_inicial == opcion.pk|stringformat:'s' or valor_inicial == opcion.pk %}true{% else %}false{% endif %}">
+        <span class="survey-pares__etiqueta">
+          {% if forloop.first and etiqueta_izq %}{{ etiqueta_izq }}{% elif forloop.last and etiqueta_der %}{{ etiqueta_der }}{% endif %}
+        </span>
+        {% if opcion.emoji %}<span class="survey-pares__emoji">{{ opcion.emoji }}</span>{% endif %}
+        <span class="survey-pares__texto">{{ opcion.texto }}</span>
+      </button>
+    {% empty %}
+      <input type="text" class="form-control" name="{{ nombre }}" placeholder="Escribe tu respuesta" aria-label="{{ pregunta.texto }}">
+    {% endfor %}
+  </div>
+
+{% elif tipo == "estrellas" %}
+  <input type="hidden" id="{{ nombre }}" name="{{ nombre }}" value="{{ valor_inicial|default:'' }}">
+  <div class="survey-stars" role="radiogroup" aria-label="{{ pregunta.texto }}">
+    {% for i in "12345" %}
+      <button type="button" class="survey-star" data-valor="{{ forloop.counter }}" role="radio"
+              aria-checked="false" aria-label="{{ forloop.counter }} de 5 estrellas" tabindex="-1">
+        <i class="bi bi-star-fill"></i>
+      </button>
+    {% endfor %}
+  </div>
+  <div class="survey-stars-labels" aria-hidden="true">
+    <span>{{ etiqueta_min|default:"Malo" }}</span>
+    <span>{{ etiqueta_max|default:"Excelente" }}</span>
+  </div>
+
+{% elif tipo == "nps" %}
+  <input type="hidden" id="{{ nombre }}" name="{{ nombre }}" value="{{ valor_inicial|default:'' }}">
+  <div class="survey-nps" role="radiogroup" aria-label="{{ pregunta.texto }}" data-min="0" data-max="10">
+    {% for i in "0123456789 10" %}
+      {% if forloop.counter0 <= 10 %}
+        <button type="button" class="survey-nps__btn {% if forloop.counter0 <= 6 %}is-red{% elif forloop.counter0 <= 8 %}is-amber{% else %}is-green{% endif %}"
+                data-valor="{{ forloop.counter0 }}" role="radio" aria-checked="false"
+                aria-label="{{ forloop.counter0 }}" tabindex="-1">{{ forloop.counter0 }}</button>
+      {% endif %}
+    {% endfor %}
+  </div>
+  <div class="survey-nps-labels" aria-hidden="true">
+    <span class="is-red-text">{{ etiqueta_min|default:"Detractor (0-6)" }}</span>
+    <span class="is-amber-text">{{ etiqueta_max|default:"9-10 Promotor" }}</span>
+  </div>
+
+{% elif tipo == "slider" %}
+  <input type="hidden" id="{{ nombre }}" name="{{ nombre }}" value="{{ valor_inicial|default:'' }}">
+  <div class="survey-slider-wrap">
+    <output class="survey-slider-value" id="{{ nombre }}_out">{{ valor_inicial|default:min }}</output>
+    <input type="range" class="form-range survey-slider" id="{{ nombre }}_range"
+           min="{{ min }}" max="{{ max }}" step="{{ paso }}"
+           value="{{ valor_inicial|default:min }}" aria-label="{{ pregunta.texto }}"
+           data-target="{{ nombre }}">
+    <div class="survey-slider-labels" aria-hidden="true">
+      <span>{{ etiqueta_min|default:min }}</span>
+      <span>{{ etiqueta_max|default:max }}</span>
+    </div>
+  </div>
+
+{% elif tipo == "emojis" %}
+  <input type="hidden" id="{{ nombre }}" name="{{ nombre }}" value="{{ valor_inicial|default:'' }}">
+  <div class="survey-emojis" role="radiogroup" aria-label="{{ pregunta.texto }}">
+    {% for valor in emojis %}
+      <button type="button" class="survey-emoji" data-valor="{{ valor }}"
+              role="radio" aria-checked="false"
+              aria-label="Emoji {{ valor }}" tabindex="-1">
+        {% if valor == 1 %}😡{% elif valor == 2 %}😕{% elif valor == 3 %}😐{% elif valor == 4 %}🙂{% elif valor == 5 %}😍{% endif %}
+      </button>
+    {% endfor %}
+  </div>
+
+{% elif tipo == "sino" %}
+  <input type="hidden" id="{{ nombre }}" name="{{ nombre }}" value="{{ valor_inicial|default:'' }}">
+  <div class="survey-sino" role="radiogroup" aria-label="{{ pregunta.texto }}">
+    <button type="button" class="survey-sino__btn {% if valor_inicial == 'si' %}is-selected{% endif %}" data-valor="si" role="radio" aria-checked="false">
+      <span class="survey-sino__icon"><i class="bi bi-check-lg"></i></span>
+      <span class="survey-sino__texto">Si</span>
+    </button>
+    <button type="button" class="survey-sino__btn {% if valor_inicial == 'no' %}is-selected{% endif %}" data-valor="no" role="radio" aria-checked="false">
+      <span class="survey-sino__icon"><i class="bi bi-x-lg"></i></span>
+      <span class="survey-sino__texto">No</span>
+    </button>
+  </div>
+
+{% elif tipo == "ranking" %}
+  <input type="hidden" id="{{ nombre }}" name="{{ nombre }}" value="{{ valor_inicial|tojson }}">
+  <div class="survey-ranking" data-pregunta="{{ pregunta.pk }}" aria-label="{{ pregunta.texto }}">
+    {% for opcion in opciones %}
+      <div class="survey-ranking__item" data-opcion-id="{{ opcion.pk }}" tabindex="0">
+        <span class="survey-ranking__handle" aria-hidden="true"><i class="bi bi-grip-vertical"></i></span>
+        <span class="survey-ranking__emoji" aria-hidden="true">{{ opcion.emoji|default:"" }}</span>
+        <span class="survey-ranking__texto">{{ opcion.texto }}</span>
+        <span class="survey-ranking__pos" aria-hidden="true"></span>
+      </div>
+    {% empty %}
+      <p class="text-secondary small">Define opciones para esta pregunta.</p>
+    {% endfor %}
+  </div>
+  <p class="text-secondary small mt-2"><i class="bi bi-info-circle me-1"></i>Arrastra las opciones para ordenarlas (la de arriba es la primera).</p>
+
+{% elif tipo == "matriz" %}
+  <input type="hidden" id="{{ nombre }}" name="{{ nombre }}" value="{{ valor_inicial|tojson }}">
+  <table class="table survey-matrix" data-matriz data-tipo="{{ nombre }}" aria-label="{{ pregunta.texto }}">
+    <thead>
+      <tr>
+        <th scope="col"></th>
+        {% for i in "12345" %}
+          <th scope="col" class="text-center" id="{{ nombre }}_col{{ forloop.counter }}">{{ forloop.counter }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for fila in filas %}
+        <tr>
+          <th scope="row">{{ fila }}</th>
+          {% for i in "12345" %}
+            <td class="text-center">
+              <input type="radio" class="form-check-input survey-matrix__radio"
+                     name="{{ nombre }}__{{ fila|slugify }}" value="{{ forloop.counter }}"
+                     data-fila="{{ fila }}" aria-labelledby="{{ nombre }}_col{{ forloop.counter }}">
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% elif tipo == "texto_corto" %}
+  {{ campo }}
+  {% if campo.errors %}<div class="text-danger small mt-2">{% for error in campo.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ error }}{% endfor %}</div>{% endif %}
+{% elif tipo == "texto_largo" %}
+  {{ campo }}
+  <div class="survey-counter text-secondary small text-end mt-1" data-counter-for="{{ nombre }}"></div>
+  {% if campo.errors %}<div class="text-danger small mt-2">{% for error in campo.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ error }}{% endfor %}</div>{% endif %}
+{% elif tipo == "fecha" %}
+  {{ campo }}
+  {% if campo.errors %}<div class="text-danger small mt-2">{% for error in campo.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ error }}{% endfor %}</div>{% endif %}
+{% elif tipo == "hora" %}
+  {{ campo }}
+  {% if campo.errors %}<div class="text-danger small mt-2">{% for error in campo.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ error }}{% endfor %}</div>{% endif %}
+{% elif tipo == "numero" %}
+  <input type="number" class="form-control survey-numero" id="{{ nombre }}" name="{{ nombre }}"
+         min="{{ min }}" max="{{ max }}" step="{{ paso }}" required-question
+         value="{{ valor_inicial|default:'' }}" aria-label="{{ pregunta.texto }}">
+  {% if campo.errors %}<div class="text-danger small mt-2">{% for error in campo.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ error }}{% endfor %}</div>{% endif %}
+{% endif %}

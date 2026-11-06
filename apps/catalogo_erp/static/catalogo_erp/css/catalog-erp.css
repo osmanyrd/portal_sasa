@@ -1,0 +1,298 @@
+/* ============================================================
+   CATÁLOGO ERP — consulta de disponibilidad contra PostgreSQL.
+   Paleta del sitio: blanco / negro / rojo #E63946. Tipografía 'Inter'.
+   Hereda variables y utilidades de automotive.css (--accent,
+   --font-body, .btn-accent, .btn-outline-accent, ...).
+   ============================================================ */
+
+/* ── Encabezado (clases compartidas con foro / encuestas) ── */
+.catalog-hero-wrap {
+  position: relative;
+  background: #0c0c0c;
+  color: #fff;
+  overflow: hidden;
+}
+.catalog-hero-wrap__bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60% 120% at 85% 0%, rgba(230, 57, 70, .25) 0%, transparent 60%),
+    radial-gradient(50% 100% at 5% 100%, rgba(230, 57, 70, .12) 0%, transparent 55%),
+    #0c0c0c;
+}
+.catalog-hero-wrap__bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,.015) 40px, rgba(255,255,255,.015) 41px);
+}
+.catalog-hero {
+  position: relative;
+  padding: clamp(3rem, 6vw, 5.5rem) 0 3.5rem;
+}
+.catalog-hero .section-tag { color: var(--accent); }
+.catalog-hero__title {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -.02em;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, .4);
+}
+.catalog-hero__intro {
+  font-size: 1.08rem;
+  color: rgba(255, 255, 255, .82);
+  line-height: 1.7;
+  max-width: 720px;
+}
+
+/* ── Grid de categorías ── */
+.catalogo-erp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+.catalogo-erp-cat {
+  --accent: #E63946;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0;
+  border: 1px solid #e6e6e6;
+  border-radius: 1.1rem;
+  overflow: hidden;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+}
+.catalogo-erp-cat:hover,
+.catalogo-erp-cat:focus-visible {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, .16);
+  border-color: var(--accent);
+  outline: none;
+}
+.catalogo-erp-cat__img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: #f4f4f4;
+}
+.catalogo-erp-cat__img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .45s ease;
+}
+.catalogo-erp-cat:hover .catalogo-erp-cat__img-wrap img,
+.catalogo-erp-cat:focus-visible .catalogo-erp-cat__img-wrap img {
+  transform: scale(1.06);
+}
+.catalogo-erp-cat__sin-foto {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #141414, #2a2a2a);
+  color: #fff;
+  font-size: 2.6rem;
+  opacity: .85;
+}
+.catalogo-erp-cat__cuerpo {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 1rem 1.1rem 1.15rem;
+}
+.catalogo-erp-cat__titulo {
+  font-family: var(--font-heading);
+  font-size: 1.06rem;
+  font-weight: 800;
+  color: #111;
+  margin: 0 0 .35rem;
+  letter-spacing: -.01em;
+}
+.catalogo-erp-cat__desc {
+  flex-grow: 1;
+  font-size: .86rem;
+  color: #555;
+  margin: 0 0 .9rem;
+  line-height: 1.5;
+}
+.catalogo-erp-cat__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  align-self: flex-start;
+  color: #E63946;
+  font-weight: 700;
+  font-size: .84rem;
+}
+.catalogo-erp-cat__cta i { transition: transform .2s ease; }
+.catalogo-erp-cat:hover .catalogo-erp-cat__cta i,
+.catalogo-erp-cat:focus-visible .catalogo-erp-cat__cta i {
+  transform: translateX(3px);
+}
+
+/* ── Estado vacío ── */
+.catalogo-erp-vacio i { color: #d5d5d5; }
+.catalogo-erp-vacio h2 { font-weight: 800; }
+
+/* ── Modal del catálogo ── */
+.catalogo-erp__modal {
+  border: none;
+  border-radius: 1.25rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .35);
+  overflow: hidden;
+}
+.catalogo-erp__modal-head {
+  background: #141414;
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+}
+.catalogo-erp__modal-head .btn-close { filter: invert(1); }
+.catalogo-erp__consulta {
+  padding: 1.4rem 1.5rem 1.5rem;
+  max-height: 62vh;
+  overflow-y: auto;
+}
+.catalogo-erp__ayuda {
+  font-size: .94rem;
+  color: #333;
+  background: #faf7f5;
+  border-left: 3px solid #E63946;
+  border-radius: .5rem;
+  padding: .65rem .9rem;
+}
+.catalogo-erp__form .form-control,
+.catalogo-erp__form .form-select {
+  border-radius: .65rem;
+  border-color: #dfe0e2;
+  font-family: var(--font-body);
+}
+.catalogo-erp__form .form-control:focus,
+.catalogo-erp__form .form-select:focus {
+  border-color: #E63946;
+  box-shadow: 0 0 0 .2rem rgba(230, 57, 70, .15);
+}
+.catalogo-erp__form label {
+  font-size: .82rem;
+  font-weight: 600;
+  color: #222;
+}
+.catalogo-erp__loader { color: #E63946; }
+
+/* ── Errores ── */
+.catalogo-erp__error {
+  background: #fdeef0;
+  color: #a11220;
+  border: 1px solid #f5c6cb;
+  border-radius: .75rem;
+  padding: .8rem 1rem;
+  font-size: .9rem;
+}
+
+/* ── Resultados ── */
+.catalogo-erp__resumen {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: .82rem;
+  color: #666;
+  margin: 1rem 0 .6rem;
+}
+.catalogo-erp__producto {
+  border: 1px solid #ececec;
+  border-radius: .9rem;
+  padding: 1rem 1.1rem;
+  margin-bottom: .75rem;
+  background: #fff;
+}
+.catalogo-erp__producto-cabeza {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .75rem;
+  flex-wrap: wrap;
+}
+.catalogo-erp__producto-codigo {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: .82rem;
+  font-weight: 700;
+  color: #E63946;
+  background: #fdeef0;
+  padding: .12rem .5rem;
+  border-radius: .4rem;
+  white-space: nowrap;
+}
+.catalogo-erp__producto-nombre {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.02rem;
+  color: #111;
+  margin-top: .3rem;
+}
+.catalogo-erp__producto-extras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem 1.2rem;
+  margin: .55rem 0 .7rem;
+  font-size: .84rem;
+  color: #444;
+}
+.catalogo-erp__pendiente {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem .9rem;
+  font-size: .84rem;
+}
+.catalogo-erp__dep {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  background: #f6f7f8;
+  border: 1px solid #e8eaec;
+  border-radius: 999px;
+  padding: .3rem .75rem;
+  color: #333;
+}
+.catalogo-erp__dep i { color: #9aa0a6; }
+.catalogo-erp__cantidad {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  font-weight: 700;
+  padding: .2rem .55rem;
+  border-radius: .45rem;
+  font-size: .8rem;
+}
+.catalogo-erp__cantidad--ok { background: #e5f6ec; color: #16824a; }
+.catalogo-erp__cantidad--no { background: #fdeef0; color: #c1121f; }
+.catalogo-erp__cantidad--top {
+  outline: 2px solid #16824a;
+  outline-offset: 1px;
+}
+.catalogo-erp__sin-stock {
+  margin-top: .55rem;
+  font-size: .82rem;
+  font-weight: 600;
+  color: #c1121f;
+}
+.catalogo-erp__vacio-aviso {
+  text-align: center;
+  padding: 1.6rem 1rem;
+  color: #666;
+}
+.catalogo-erp__vacio-aviso i { font-size: 1.8rem; color: #d8d8d8; display: block; margin-bottom: .5rem; }
+
+/* ── Responsive ── */
+@media (max-width: 767.98px) {
+  .catalogo-erp__consulta { padding: 1.1rem 1rem 1.25rem; }
+  .catalogo-erp-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+}

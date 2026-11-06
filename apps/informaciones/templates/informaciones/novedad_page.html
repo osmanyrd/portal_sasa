@@ -1,0 +1,69 @@
+{% extends "automotive/base_automotive.html" %}
+{% load static wagtailimages_tags wagtailcore_tags %}
+
+{% block title %}{{ page.title }} | Servicios Automotores S.A{% endblock %}
+{% block meta_description %}{{ page.contenido|striptags|truncatechars:160 }}{% endblock %}
+
+{% block content %}
+{% with padre=page.get_parent.specific %}
+<div class="info-hero-wrap">
+  <div class="info-hero-wrap__bg" aria-hidden="true"></div>
+  <div class="container info-hero">
+    <a class="info-volver" href="{% if padre %}{{ padre.url }}{% endif %}" aria-label="Volver al listado de novedades">
+      <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Volver al listado
+    </a>
+    <div class="info-detalle__badge-wrap mt-3">
+      <span class="info-card__badge info-card__badge--{{ page.tipo }}">
+        <i class="bi {{ page.etiqueta_tipo }} me-1" aria-hidden="true"></i>{{ page.nombre_tipo }}
+      </span>
+    </div>
+    <h1 class="info-hero__title fw-bold mt-2 mb-3">{{ page.title }}</h1>
+    <div class="info-detalle__meta">
+      <span><i class="bi bi-clock me-1" aria-hidden="true"></i>{{ page.fecha_publicacion|date:"d M Y H:i" }}</span>
+      {% if page.es_reciente %}<span class="info-detalle__reciente"><i class="bi bi-bell-fill me-1" aria-hidden="true"></i>Reciente</span>{% endif %}
+      {% if page.destacado %}<span class="info-detalle__destacada"><i class="bi bi-star-fill me-1" aria-hidden="true"></i>Destacada</span>{% endif %}
+    </div>
+  </div>
+</div>
+
+<section class="container py-4">
+  {% if page.titulo_corto %}
+    <p class="info-detalle__subtitulo">{{ page.titulo_corto }}</p>
+  {% endif %}
+
+  <div class="info-detalle__cuerpo rich-text">{{ page.contenido|richtext }}</div>
+
+{% if page.imagen %}
+    {% image page.imagen max-1200x1200 format-webp as banner_img %}
+    <figure class="info-detalle__figura mt-4">
+      <div class="banner-container
+          banner-{{ page.modo_efectivo }}
+          fondo-{{ page.estilo_fondo }}
+          tamano-{{ page.tamano_miniatura }}
+          posicion-{{ page.posicion_vertical }}
+          posicion-h-{{ page.posicion_horizontal }}">
+        <div class="banner-container__bg" style="background-image: url('{{ banner_img.url }}');" aria-hidden="true"></div>
+        <div class="banner-container__overlay" aria-hidden="true"></div>
+        <img
+          class="banner-container__main"
+          src="{{ banner_img.url }}"
+          alt="{{ page.title }}"
+          loading="lazy"
+          decoding="async">
+      </div>
+    </figure>
+    {% endif %}
+
+  <div class="info-detalle__acciones mt-5 pt-4 border-top">
+    {% if page.enlace_externo %}
+      <a href="{{ page.enlace_externo }}" class="btn btn-accent" target="_blank" rel="noopener">
+        Ver <i class="bi bi-box-arrow-up-right ms-1" aria-hidden="true"></i>
+      </a>
+    {% endif %}
+    <a href="{% if padre %}{{ padre.url }}{% endif %}" class="btn btn-outline-accent">
+      <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Volver a {{ padre.title|default:"novedades" }}
+    </a>
+  </div>
+</section>
+{% endwith %}
+{% endblock %}

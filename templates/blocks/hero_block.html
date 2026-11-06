@@ -1,0 +1,25 @@
+{% load wagtailimages_tags %}
+<section class="{{ design_classes }} hero-section position-relative overflow-hidden {% if not value.background_image %}hero-fallback{% endif %}">
+    {% if value.background_image %}
+        {% image value.background_image fill-1920x900 as bg %}
+        <img src="{{ bg.url }}"
+             class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
+             alt="{{ value.title }}">
+    {% endif %}
+    <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100"></div>
+    <div class="container position-relative">
+        <div class="row py-6">
+            <div class="col-lg-9">
+                <h1 class="display-3 fw-bold">{{ value.title }}</h1>
+                {% if value.subtitle %}
+                    <p class="lead mt-3 mb-4">{{ value.subtitle|linebreaksbr }}</p>
+                {% endif %}
+                {% if value.cta_label and cta_href %}
+                    <a href="{{ cta_href }}" class="btn {{ value.cta_style }} btn-lg px-4 mt-2">
+                        {{ value.cta_label }}
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>

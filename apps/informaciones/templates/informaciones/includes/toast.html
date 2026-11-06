@@ -1,0 +1,36 @@
+{% load static wagtailcore_tags %}
+{% if info_mostrar_cartel %}
+<div
+  class="info-toast"
+  id="infoToast"
+  role="status"
+  aria-live="polite"
+  aria-atomic="true"
+  data-info-toast
+  data-info-toast-id="{{ info_recientes.0.id }}"
+  data-info-toast-timer="8000"
+  hidden>
+  <div class="info-toast__content">
+    <span class="info-toast__icon" aria-hidden="true">
+      {% if info_recientes.0.categoria == 'novedad' %}<i class="bi bi-stars"></i>
+      {% elif info_recientes.0.tipo == 'alerta' %}<i class="bi bi-exclamation-triangle-fill"></i>
+      {% elif info_recientes.0.tipo == 'comunicado' %}<i class="bi bi-envelope-paper-fill"></i>
+      {% elif info_recientes.0.tipo == 'noticia' %}<i class="bi bi-newspaper"></i>
+      {% else %}<i class="bi bi-megaphone-fill"></i>{% endif %}
+    </span>
+    <div class="info-toast__body">
+      <span class="info-toast__tag"><i class="bi bi-bell-fill me-1" aria-hidden="true"></i>Novedad / información reciente</span>
+      <p class="info-toast__title">{{ info_recientes.0.titulo }}</p>
+      {% if info_conteo > 1 %}
+        <p class="info-toast__meta">Hay {{ info_conteo }} novedades e informaciones nuevas</p>
+      {% endif %}
+    </div>
+    <a href="{{ info_indice_url }}" class="btn btn-accent btn-sm info-toast__ver">
+      Ver <i class="bi bi-arrow-right" aria-hidden="true"></i>
+    </a>
+  </div>
+  <button type="button" class="info-toast__close" data-info-toast-close aria-label="Cerrar notificación">
+    <i class="bi bi-x-lg" aria-hidden="true"></i>
+  </button>
+</div>
+{% endif %}

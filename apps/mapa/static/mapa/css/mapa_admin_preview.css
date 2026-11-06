@@ -1,0 +1,38 @@
+/* Vista previa del mapa en el admin (snippet Provincia) */
+#mapaAdminPreview #mapaAdminPins {
+  pointer-events: none;
+}
+#mapaAdminPreview .mapa-admin-pin {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  cursor: grab;
+  line-height: 1;
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+}
+#mapaAdminPreview .mapa-admin-pin:active {
+  cursor: grabbing;
+}
+#mapaAdminPreview .mapa-admin-pin__dot {
+  display: block;
+  color: #E63946;
+  font-size: 22px;
+  text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+}
+#mapaAdminPreview .mapa-admin-pin__label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #1a1a2e;
+  background: rgba(255,255,255,0.9);
+  padding: 0 3px;
+  border-radius: 3px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  white-space: nowrap;
+}
+#mapaAdminPreview .mapa-admin-pin:focus-visible {
+  outline: 2px solid #1a1a2e;
+  outline-offset: 2px;
+}

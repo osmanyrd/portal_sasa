@@ -1,0 +1,16 @@
+{% load wagtailimages_tags %}
+<div class="page-header position-relative overflow-hidden {% if page.header_image %}has-image{% endif %}">
+    {% if page.header_image %}
+        {% image page.header_image fill-1920x520 as header_img %}
+        <img src="{{ header_img.url }}" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" alt="{{ page.title }}">
+        <div class="page-header-overlay"></div>
+    {% endif %}
+    <div class="container position-relative py-5">
+        <div class="py-md-4">
+            <h1 class="display-5 fw-bold">{{ page.title }}</h1>
+            {% if page.subtitle %}
+                <p class="lead mb-0 opacity-90">{{ page.subtitle }}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>

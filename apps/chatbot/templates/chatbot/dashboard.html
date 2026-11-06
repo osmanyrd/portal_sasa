@@ -1,0 +1,89 @@
+{% extends "wagtailadmin/base.html" %}
+{% load i18n %}
+
+{% block titletag %}{{ titulo }}{% endblock %}
+
+{% block content %}
+    {% include "wagtailadmin/shared/header.html" with title=titulo icon="snippet" %}
+
+    <div class="nice-padding">
+        <div class="row" style="display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+
+            <div style="flex:1; min-width:160px; background:var(--w-color-surface-header); padding:1rem; border-radius:8px;">
+                <strong style="font-size:1.6rem; display:block;">{{ stats.consultas }}</strong>
+                <span>Consultas totales</span>
+                <small class="help" style="display:block;">Hoy: <b>{{ stats.hoy }}</b> · Ayer: <b>{{ stats.ayer }}</b></small>
+            </div>
+
+            <div style="flex:1; min-width:160px; background:var(--w-color-surface-header); padding:1rem; border-radius:8px;">
+                <strong style="font-size:1.6rem; display:block;">{{ stats.conversion }}%</strong>
+                <span>Contestadas ({{ stats.respondidas }}/{{ stats.consultas }})</span>
+            </div>
+
+            <div style="flex:1; min-width:160px; background:var(--w-color-surface-header); padding:1rem; border-radius:8px;">
+                <strong style="font-size:1.6rem; display:block;">{{ stats.tasa_util }}%</strong>
+                <span>Feedback útil (👍 {{ stats.feedback_up }} · 👎 {{ stats.feedback_down }})</span>
+            </div>
+
+            <div style="flex:1; min-width:160px; background:var(--w-color-surface-header); padding:1rem; border-radius:8px;">
+                <strong style="font-size:1.6rem; display:block;">{{ stats.leads_pendientes }}</strong>
+                <span>Leads pendientes de atender</span>
+            </div>
+        </div>
+
+        <div style="display:flex; flex-wrap:wrap; gap:1.5rem;">
+            <div style="flex:2; min-width:320px;">
+                <h2>Estado de la base de conocimiento</h2>
+                <table class="listing">
+                    <tbody>
+                        <tr><td>Documentos de conocimiento</td><td><b>{{ stats.documentos }}</b></td></tr>
+                        <tr><td>Fragmentos vectorizados</td><td><b>{{ stats.fragmentos }}</b></td></tr>
+                        <tr><td>Conversaciones</td><td><b>{{ stats.conversaciones }}</b></td></tr>
+                        <tr><td>Mensajes</td><td><b>{{ stats.mensajes }}</b></td></tr>
+                        <tr><td>Consultas no contestadas</td><td><b>{{ stats.no_respondidas }}</b></td></tr>
+                    </tbody>
+                </table>
+
+                <h2>Motores configurados</h2>
+                <table class="listing">
+                    <tbody>
+                        <tr><td>Embeddings</td><td><b>{{ embeddings.proveedor }}</b> — {{ embeddings.modelo }}</td></tr>
+                        <tr><td>LLM</td><td><b>{{ cfg.proveedor_llm }}</b> — {{ cfg.llm_modelo_efectivo }}</td></tr>
+                        <tr><td>Moderación</td><td>{{ cfg.moderacion_activa|yesno:"Activa,Desactivada" }}</td></tr>
+                        <tr><td>Caché de respuestas</td><td>{{ cfg.cache_respuestas|yesno:"Activa,Desactivada" }}</td></tr>
+                    </tbody>
+                </table>
+                <p style="margin-top:1rem;">
+                    <a href="/cms/chatbot/exportar/" class="button bicolor button--icon">
+                        <span class="icon-wrapper"><i class="icon icon-download"></i></span>
+                        Exportar conversaciones (CSV)
+                    </a>
+                    <a href="/cms/chatbot/reingestar/" class="button button-secondary">
+                        Re-ingestar documentos
+                    </a>
+                </p>
+            </div>
+
+            <div style="flex:1; min-width:300px;">
+                <h2>Últimas conversaciones</h2>
+                <table class="listing">
+                    <thead>
+                        <tr><th>Sesión</th><th>Mensajes</th><th>Idioma</th><th>Inicio</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for c in conversaciones_ult %}
+                        <tr>
+                            <td><code>{{ c.session_key|truncatechars:18 }}</code></td>
+                            <td>{{ c.n_mensajes }}</td>
+                            <td>{{ c.idioma }}</td>
+                            <td>{{ c.iniciada_en|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4">Aún no hay conversaciones.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

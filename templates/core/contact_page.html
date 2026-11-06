@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load wagtailimages_tags wagtailcore_tags %}
+
+{% block content %}
+    {% include "includes/page_header.html" %}
+
+    <section id="contacto" class="section-md bg-body-tertiary">
+        <div class="container">
+
+            <div class="row g-5">
+                <div class="col-lg-7">
+                    <div class="bg-white rounded-4 shadow-sm p-4 p-lg-5 h-100">
+                        {% if page.intro %}
+                            <div class="rich-text mb-4">{{ page.intro|richtext }}</div>
+                        {% endif %}
+                        {% include "core/includes/contact_form.html" with form=form %}
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="d-grid gap-3 mb-4">
+                        {% if settings.core.SiteSettings.address %}
+                            <div class="d-flex align-items-start gap-3">
+                                <span class="icon-bubble"><i class="bi bi-geo-alt"></i></span>
+                                <div>{{ settings.core.SiteSettings.address }}</div>
+                            </div>
+                        {% endif %}
+                        {% if settings.core.SiteSettings.phone %}
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="icon-bubble"><i class="bi bi-telephone"></i></span>
+                                <a class="link-dark" href="tel:{{ settings.core.SiteSettings.phone|cut:' ' }}">
+                                    {{ settings.core.SiteSettings.phone }}</a>
+                            </div>
+                        {% endif %}
+                        {% if settings.core.SiteSettings.contact_email %}
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="icon-bubble"><i class="bi bi-envelope"></i></span>
+                                <a class="link-dark" href="mailto:{{ settings.core.SiteSettings.contact_email }}">
+                                    {{ settings.core.SiteSettings.contact_email }}</a>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {% if page.map_embed_url %}
+                        <div class="ratio ratio-4x3 rounded-4 overflow-hidden shadow-sm map-frame">
+                            <iframe src="{{ page.map_embed_url }}"
+                                    title="Ubicación de {{ SITE_NAME }}"
+                                    style="border:0"
+                                    loading="lazy"
+                                    allowfullscreen
+                                    referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

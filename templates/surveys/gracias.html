@@ -1,0 +1,33 @@
+{% extends "automotive/base_automotive.html" %}
+{% load static %}
+
+{% block title %}Gracias por participar{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'surveys/css/surveys.css' %}">
+<link rel="stylesheet" href="{% static 'catalogo_erp/css/catalog-erp.css' %}">
+{% endblock %}
+
+{% block content %}
+{% include "surveys/includes/survey_hero.html" with hero_tag="Encuesta completada" hero_title="¡Gracias por participar!" %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 text-center">
+      <div class="survey-card card border-0 shadow-sm">
+        <div class="card-body p-5">
+          <div class="survey-success-icon mb-4">
+            <i class="bi bi-check-circle-fill"></i>
+          </div>
+          <h2 class="fw-bold mb-3">{{ encuesta.mensaje_agradecimiento }}</h2>
+          <p class="text-secondary mb-4">
+            Tu participacion ha sido registrada correctamente.
+          </p>
+          <a href="/" class="survey-btn-primary btn btn-lg px-4">
+            <i class="bi bi-house me-2"></i>Volver al inicio
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

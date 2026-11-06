@@ -1,0 +1,144 @@
+{% load static wagtailimages_tags wagtailuserbar site_tags survey_tags %}<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block seo_title %}{{ page.seo_title|default:page.title }} · {{ SITE_NAME }}{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}{{ page.search_description|default:SITE_NAME }} — {{ settings.core.SiteSettings.footer_text|striptags|truncatechars:150|default:'Sitio institucional' }}{% endblock %}">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:title" content="{{ page.seo_title|default:page.title }}">
+    <meta property="og:description" content="{{ page.search_description }}">
+    <meta property="og:url" content="{% if request %}{{ request.build_absolute_uri }}{% endif %}">
+    {% if page.og_image %}
+        {% image page.og_image fill-1200x630 as og %}
+        <meta property="og:image" content="{{ og.url }}">
+    {% elif settings.core.SiteSettings.logo %}
+        {% image settings.core.SiteSettings.logo fill-1200x630 as og %}
+        <meta property="og:image" content="{{ og.url }}">
+    {% endif %}
+    <meta name="twitter:card" content="summary_large_image">
+    {% if settings.core.SiteSettings.favicon %}
+        {% image settings.core.SiteSettings.favicon fill-64x64 as fav %}
+        <link rel="icon" href="{{ fav.url }}">
+    {% endif %}
+    {% comment %}PWA: manifest, icono de iOS y capacidades de app instalable.{% endcomment %}
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="apple-touch-icon" href="{% static 'icons/apple-touch-icon.png' %}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="{{ SITE_NAME|default:'SASA' }}">
+    <meta name="theme-color" content="#E63946">
+    <link href="{% static 'vendor/css/google-fonts.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/css/bootstrap-icons.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'surveys/css/surveys.css' %}">
+    <link rel="stylesheet" href="{% static 'informaciones/css/informaciones.css' %}">
+    <link rel="stylesheet" href="{% static 'usuarios/css/usuarios.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navbar-redesign.css' %}">
+    <link rel="stylesheet" href="{% static 'pwa/pwa.css' %}">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'css/search.css' %}">
+    <script>document.documentElement.classList.add("has-js");</script>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('theme')
+            || localStorage.getItem('sa-theme')
+            || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+          document.documentElement.setAttribute('data-bs-theme', t === 'light' ? 'light' : 'dark');
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+          document.documentElement.setAttribute('data-bs-theme', 'light');
+        }
+      })();
+    </script>
+    <style>
+        :root {
+            --brand: {{ color_acento|default:settings.core.SiteSettings.primary_color }};
+            --brand-2: {{ settings.core.SiteSettings.secondary_color }};
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <script>(function(){var r=document.documentElement.getAttribute('data-theme');if(r){document.body.classList.toggle('dark-mode', r==='dark');}else{try{document.body.classList.toggle('dark-mode', document.documentElement.getAttribute('data-bs-theme') === 'dark');}catch(e){}}})();</script>
+    <div class="preloader" id="preloader" aria-hidden="true">
+        <div class="preloader-inner">
+            <div class="preloader-ring"><span></span></div>
+            <p class="preloader-brand mt-3 mb-0">{{ SITE_NAME }}</p>
+        </div>
+    </div>
+    <div id="scrollProgress" class="scroll-progress" aria-hidden="true"></div>
+    {% wagtailuserbar %}
+    {% include "includes/navbar.html" %}
+    {% if banner_sitio %}
+        {% image banner_sitio fill-1920x300 as theme_banner %}
+        <div class="theme-banner" role="banner">
+            <img src="{{ theme_banner.url }}" alt="Banner del tema" loading="lazy">
+            {% if tema_activo %}
+                <div class="theme-banner-overlay">
+                    <span class="theme-text">{{ tema_activo.nombre }}</span>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+    <main class="flex-grow-1">
+        {% if messages %}
+            <div class="container mt-3">
+                {% for message in messages %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+    {% include "informaciones/includes/toast.html" %}
+    {% include "informaciones/includes/cinta.html" %}
+    {% include "includes/footer.html" %}
+    <button id="backToTop" class="back-to-top" aria-label="Volver arriba">
+        <i class="bi bi-chevron-up"></i>
+    </button>
+    <script src="{% static 'vendor/js/bootstrap.bundle.min.js' %}" defer></script>
+    <script src="{% static 'vendor/js/htmx.min.js' %}" defer></script>
+    {% include "includes/search_modal.html" %}
+    <script src="{% static 'js/main.js' %}" defer></script>
+    <script src="{% static 'js/navbar.js' %}" defer></script>
+    <script src="{% static 'js/theme.js' %}" defer></script>
+    <script src="{% static 'js/search.js' %}" defer></script>
+    <script src="{% static 'informaciones/js/informaciones.js' %}" defer></script>
+    <script src="{% static 'surveys/js/surveys.js' %}" defer></script>
+    <script src="{% static 'usuarios/js/usuarios.js' %}" defer></script>
+    <script>
+      function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+          pageLanguage: 'es',
+          includedLanguages: 'en,pt,fr,it,de,zh-CN,ja,ko,ru,ar',
+          layout: google.translate.TranslateElement.FloatPosition.NONE,
+          autoDisplay: false
+        }, 'google_translate_element');
+      }
+    </script>
+    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" defer></script>
+    <div id="google_translate_element" class="gt-hidden" aria-hidden="true"></div>
+    {% include "surveys/includes/survey_float.html" %}
+    {% mostrar_modal_encuesta %}
+    {% block extra_js %}{% endblock %}
+    {% comment %}PWA: botón "Instalar app" e instrucciones para iOS.{% endcomment %}
+    <button type="button" id="pwaInstallBtn" class="pwa-install" hidden>
+        <i class="bi bi-download" aria-hidden="true"></i> Instalar app
+    </button>
+    <div id="pwaIosHint" class="pwa-ios-hint" hidden role="note">
+        Para instalar en iPhone/iPad: tocá <b>Compartir</b>
+        <span class="pwa-ios-hint__icon" aria-hidden="true">&#8627;</span>
+        y luego <b>“Añadir a pantalla de inicio”</b>.
+        <button type="button" class="pwa-ios-hint__close" data-pwa-hint-close aria-label="Cerrar">&#10005;</button>
+    </div>
+    <script src="{% static 'pwa/pwa.js' %}" defer></script>
+</body>
+</html>

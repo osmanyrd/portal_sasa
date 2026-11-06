@@ -1,0 +1,89 @@
+{% load survey_tags %}
+{% load survey_render %}
+{% load static %}
+{# Widget de encuesta — se incluye con {% mostrar_encuesta_activa %} #}
+{% if encuesta %}
+<div class="survey-widget card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="card-title fw-bold mb-1">
+            <i class="bi bi-poll text-brand me-2"></i>{{ encuesta.titulo_publico }}
+        </h5>
+        {% if encuesta.descripcion %}
+            <p class="text-secondary small mb-3">{{ encuesta.descripcion }}</p>
+        {% endif %}
+
+        {% if not encuesta.esta_vigente %}
+            {# Encuesta cerrada — mostrar resultados #}
+            <div class="alert alert-secondary small mb-0">
+                <i class="bi bi-info-circle me-1"></i>
+                Esta encuesta ya cerro. Estos son los resultados:
+            </div>
+            {% for r_pregunta in resultados %}
+                <div class="mt-3">
+                    <p class="fw-semibold mb-2">{{ r_pregunta.texto }}</p>
+                    {% for opt in r_pregunta.distribucion %}
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>{% if opt.emoji %}{{ opt.emoji }} {% endif %}{{ opt.label }}</span>
+                                <span class="text-secondary">{{ opt.votos }} voto{{ opt.votos|pluralize }} ({{ opt.porcentaje }}%)</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-brand" role="progressbar"
+                                     style="width: {{ opt.porcentaje }}%; background-color: var(--brand) !important;"
+                                     aria-valuenow="{{ opt.porcentaje }}" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+        {% elif ya_voto %}
+            {# Ya voto — mostrar resultados #}
+            <div class="alert alert-success small mb-0">
+                <i class="bi bi-check-circle me-1"></i>
+                Ya has votado en esta encuesta. Gracias por participar!
+            </div>
+            {% for r_pregunta in resultados %}
+                <div class="mt-3">
+                    <p class="fw-semibold mb-2">{{ r_pregunta.texto }}</p>
+                    {% for opt in r_pregunta.distribucion %}
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>{% if opt.emoji %}{{ opt.emoji }} {% endif %}{{ opt.label }}</span>
+                                <span class="text-secondary">{{ opt.votos }} voto{{ opt.votos|pluralize }} ({{ opt.porcentaje }}%)</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-brand" role="progressbar"
+                                     style="width: {{ opt.porcentaje }}%; background-color: var(--brand) !important;"
+                                     aria-valuenow="{{ opt.porcentaje }}" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+        {% elif formulario %}
+            {# Formulario de votacion #}
+            <form method="post" action="{% url 'surveys:vote' encuesta.pk %}" class="survey-form" id="surveyForm">
+                {% csrf_token %}
+                {% for pregunta in encuesta.preguntas_ordenadas %}
+                    <div class="survey-question mb-3" data-tipo="{{ pregunta.tipo }}" data-pregunta="{{ pregunta.pk }}" data-requerida="{{ pregunta.requerida|yesno:'1,0' }}">
+                        <p class="fw-semibold mb-2">{{ pregunta.texto }}{% if pregunta.requerida %}<span class="survey-required-star">*</span>{% endif %}</p>
+                        {% render_pregunta_form pregunta formulario %}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-brand btn-sm">
+                    <i class="bi bi-check2-circle me-1"></i>Votar
+                </button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% if formulario %}
+<link rel="stylesheet" href="{% static 'surveys/css/survey_interactive.css' %}">
+<script src="{% static 'surveys/js/survey_interactive.js' %}" defer></script>
+{% endif %}

@@ -1,0 +1,22 @@
+<section class="{{ design_classes }}">
+    <div class="container">
+        {% if value.heading %}
+            <h2 class="display-6 fw-bold text-center mb-5">{{ value.heading }}</h2>
+        {% endif %}
+        {% if value.embed_url %}
+            <div class="ratio ratio-16x9 rounded-4 overflow-hidden shadow-sm video-frame">
+                <iframe src="{{ value.embed_url }}"
+                        title="{{ value.heading|default:'Video' }}"
+                        style="border:0"
+                        loading="lazy"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen></iframe>
+            </div>
+        {% elif value.video_file %}
+            <video class="w-100 rounded-4 shadow-sm" controls preload="metadata">
+                <source src="{{ value.video_file.url }}" type="video/mp4">
+                Tu navegador no soporta la reproducción de videos.
+            </video>
+        {% endif %}
+    </div>
+</section>

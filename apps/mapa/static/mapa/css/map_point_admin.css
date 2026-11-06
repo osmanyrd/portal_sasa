@@ -1,0 +1,104 @@
+/* Cuando se carga la página de edición de una Dependencia en el admin
+   de Wagtail (snippet Provincia), el widget MapPointWidget muestra un
+   campo de coordenadas acompañado de un selector Leaflet. */
+
+.mapa-selector {
+  max-width: 520px;
+}
+
+.mapa-selector__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin-top: .45rem;
+  padding: .35rem .85rem;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  background: #fff;
+  color: #1f2933;
+  font-size: .85rem;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.mapa-selector__btn:hover {
+  border-color: #b3b8c2;
+  background: #f7f8fa;
+}
+
+.mapa-selector__btn-icon {
+  color: #d0021b;
+  font-size: .95rem;
+  line-height: 1;
+}
+
+.mapa-selector__panel {
+  margin-top: .55rem;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.mapa-selector__canvas {
+  position: relative;
+  z-index: 1;
+  height: 300px;
+}
+
+/* El panel vive dentro del tab "Dependencias"; aseguramos que el mapa
+   (z-index interno de Leaflet parte de 400) no salga del panel. */
+.mapa-selector__canvas .leaflet-pane,
+.mapa-selector__canvas .leaflet-top,
+.mapa-selector__canvas .leaflet-bottom {
+  z-index: 10;
+}
+
+.mapa-selector__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  flex-wrap: wrap;
+  padding: .5rem .75rem;
+  background: #fafbfc;
+  border-top: 1px solid #eceef1;
+  font-size: .78rem;
+  color: #52606d;
+}
+
+.mapa-selector__actions {
+  display: inline-flex;
+  gap: .5rem;
+}
+
+.mapa-selector__link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: #4a6cf7;
+  font-size: .78rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.mapa-selector__link:hover {
+  color: #2b50d6;
+}
+
+/* Modo oscuro del admin de Wagtail */
+.theme-dark .mapa-selector__btn {
+  border-color: #3c4250;
+  background: #292d36;
+  color: #e4e6eb;
+}
+.theme-dark .mapa-selector__btn:hover {
+  border-color: #525a69;
+  background: #333844;
+}
+.theme-dark .mapa-selector__panel,
+.theme-dark .mapa-selector__footer {
+  border-color: #3c4250;
+  background: #20242c;
+  color: #cbd2d9;
+}

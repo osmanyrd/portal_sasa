@@ -1,0 +1,13 @@
+{# Theme banner template — include in any page: {% include "includes/theme_banner.html" %} #}
+{% load wagtailimages_tags %}
+{% if banner_sitio %}
+    {% image banner_sitio fill-1920x300 as theme_banner %}
+    <div class="theme-banner" role="banner">
+        <img src="{{ theme_banner.url }}" alt="Banner del tema" loading="lazy">
+        {% if tema_activo %}
+            <div class="theme-banner-overlay">
+                <span class="theme-text">{{ tema_activo.nombre }}</span>
+            </div>
+        {% endif %}
+    </div>
+{% endif %}

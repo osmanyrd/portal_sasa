@@ -1,0 +1,468 @@
+/* ============================================================
+   TEMA SA — Sistema de tema claro/oscuro centralizado
+   Servicios Automotores S.A · Paleta: blanco / negro / rojo
+   Driver: atributo `data-theme="dark"` en <html>.
+   También sincroniza `data-bs-theme` y `body.dark-mode` para que
+   Bootstrap y el CSS heredado sigan funcionando.
+   ============================================================ */
+
+/* ============ 1) TOKENS — MODO CLARO (por defecto) ============ */
+:root {
+  color-scheme: light;
+
+  /* Especificación del cliente */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F5F5F5;
+  --bg-navbar: #FFFFFF;
+  --text-primary: #000000;
+  --text-secondary: #444444;
+  --text-navbar: #000000;
+  --icon-navbar: #000000;
+  --border-color: #E0E0E0;
+  --accent: #E63946;
+  --accent-hover: #B71C2C;
+  --shadow-color: rgba(0, 0, 0, 0.08);
+
+  /* Derivados */
+  --body-bg: var(--bg-primary);
+  --body-text: var(--text-primary);
+  --card-bg: var(--bg-primary);
+  --input-bg: var(--bg-primary);
+  --shadow-sm: 0 1px 3px var(--shadow-color);
+  --shadow-md: 0 4px 16px var(--shadow-color);
+  --shadow-lg: 0 12px 40px var(--shadow-color);
+
+  /* Navbar claro (sobrescribe navbar-redesign.css, cargado antes) */
+  --navbar-bg: #FFFFFF;
+  --navbar-border: rgba(0, 0, 0, .12);
+  --navbar-shadow: 0 1px 8px rgba(0, 0, 0, .10);
+  --navbar-shadow-scrolled: 0 2px 12px rgba(0, 0, 0, .14);
+  --navbar-accent: #E63946;
+  --navbar-accent-dark: #B71C2C;
+  --navbar-text: #000000;
+  --navbar-text-muted: rgba(0, 0, 0, .62);
+  --navbar-dropdown-bg: #FFFFFF;
+  --navbar-dropdown-text: #1a1a1a;
+  --navbar-dropdown-muted: #6c757d;
+
+  text-rendering: optimizeLegibility;
+}
+
+/* ============ 2) TOKENS — MODO OSCURO ============ */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Especificación del cliente */
+  --bg-primary: #121212;
+  --bg-secondary: #1E1E1E;
+  --bg-navbar: #000000;
+  --text-primary: #FFFFFF;
+  --text-secondary: #CCCCCC;
+  --text-navbar: #FFFFFF;
+  --icon-navbar: #FFFFFF;
+  --border-color: #333333;
+  --accent: #E63946;
+  --accent-hover: #FF5566;
+  --shadow-color: rgba(255, 255, 255, 0.05);
+
+  --body-bg: var(--bg-primary);
+  --body-text: var(--text-primary);
+  --card-bg: var(--bg-secondary);
+  --input-bg: #1E1E1E;
+  --shadow-sm: 0 1px 3px var(--shadow-color);
+  --shadow-md: 0 4px 16px var(--shadow-color);
+  --shadow-lg: 0 12px 40px var(--shadow-color);
+
+  /* Navbar oscuro */
+  --navbar-bg: #000000;
+  --navbar-border: rgba(255, 255, 255, .16);
+  --navbar-shadow: 0 1px 8px rgba(0, 0, 0, .35);
+  --navbar-shadow-scrolled: 0 2px 12px rgba(0, 0, 0, .45);
+  --navbar-accent: #E63946;
+  --navbar-accent-dark: #C1121F;
+  --navbar-text: #FFFFFF;
+  --navbar-text-muted: rgba(255, 255, 255, .68);
+  --navbar-dropdown-bg: #1E1E1E;
+  --navbar-dropdown-text: #F5F5F5;
+  --navbar-dropdown-muted: #9AA0A6;
+}
+
+/* ============ 3) BASE ============ */
+body {
+  background-color: var(--body-bg);
+  color: var(--body-text);
+}
+
+/* Transiciones suaves de tema */
+body,
+.navbar-sa,
+.card,
+.info-card,
+.foro-cat-card,
+.foro-tema-item,
+.catalogo-erp-cat,
+.mapa-panel,
+.dep-card,
+.auth-card,
+input,
+select,
+textarea {
+  transition: background-color .3s ease, color .3s ease, border-color .3s ease, box-shadow .3s ease;
+}
+
+/* ============ 4) NAVBAR ADAPTATIVO ============ */
+/* El drawer lateral mantiene su fondo oscuro de marca en ambos temas,
+   con texto/iconos siempre claros (independiente de --navbar-text). */
+.navbar-sa__drawer {
+  --navbar-bg: #111318;
+  --navbar-text: #FFFFFF;
+  --navbar-text-muted: rgba(255, 255, 255, .68);
+  --navbar-border: rgba(255, 255, 255, .16);
+}
+.navbar-sa__drawer .navbar-sa__drawer-nav a,
+.navbar-sa__drawer .navbar-sa__lang-item,
+.navbar-sa__drawer .navbar-sa__drawer-close {
+  color: var(--navbar-text);
+}
+
+/* Hovers de navbar pensados para fondo oscuro → versiones claras */
+[data-theme="light"] .navbar-sa__btn:hover,
+[data-theme="light"] .navbar-sa__lang-toggle:hover,
+[data-theme="light"] .navbar-sa__theme:hover {
+  background: rgba(0, 0, 0, .06);
+}
+[data-theme="light"] .navbar-sa__search.is-open .navbar-sa__search-input {
+  background: rgba(0, 0, 0, .05);
+  box-shadow: none;
+}
+[data-theme="light"] .navbar-sa__user-toggle {
+  background: rgba(0, 0, 0, .06);
+}
+[data-theme="light"] .navbar-sa__user-toggle:hover {
+  background: rgba(0, 0, 0, .12);
+}
+[data-theme="light"] .navbar-sa .info-bell__btn:hover,
+[data-theme="light"] .navbar-sa .info-bell__btn[aria-expanded="true"],
+[data-theme="light"] .navbar-sa .survey-bell__btn:hover,
+[data-theme="light"] .navbar-sa .survey-bell__btn[aria-expanded="true"] {
+  background: rgba(0, 0, 0, .06);
+}
+[data-theme="light"] .navbar-sa .user-menu__toggle {
+  background: rgba(0, 0, 0, .06);
+}
+[data-theme="light"] .navbar-sa .user-menu__toggle:hover {
+  background: rgba(0, 0, 0, .12);
+}
+[data-theme="light"] .navbar-sa .lang-select__toggle:hover,
+[data-theme="light"] .navbar-sa .lang-select__toggle:focus-visible {
+  background: rgba(0, 0, 0, .06);
+}
+[data-theme="light"] .navbar-sa__drawer-search input {
+  background: rgba(0, 0, 0, .05);
+}
+
+/* Dropdowns del navbar: en oscuro, hover/header adaptados */
+[data-theme="dark"] .navbar-sa__user-link:hover,
+[data-theme="dark"] .navbar-sa__lang-item:hover {
+  background: rgba(255, 255, 255, .08);
+}
+[data-theme="dark"] .navbar-sa__user-header {
+  border-bottom-color: var(--border-color);
+}
+[data-theme="dark"] .navbar-sa__lang-item.is-active {
+  background: rgba(230, 57, 70, .18);
+  color: var(--accent-hover);
+}
+[data-theme="dark"] .navbar-sa__user-link--danger:hover {
+  background: rgba(230, 57, 70, .15);
+}
+[data-theme="dark"] .navbar-sa .user-menu__dropdown,
+[data-theme="dark"] .navbar-sa .lang-select__menu {
+  background: var(--navbar-dropdown-bg) !important;
+  color: var(--navbar-dropdown-text) !important;
+}
+[data-theme="dark"] .navbar-sa .user-menu__header {
+  background: var(--bg-secondary) !important;
+}
+[data-theme="dark"] .navbar-sa .user-menu__link,
+[data-theme="dark"] .navbar-sa .user-menu__link--btn {
+  color: var(--navbar-dropdown-text) !important;
+}
+
+/* Navbar siempre usa los tokens (dark original); reforzamos iconos */
+.navbar-sa__btn i,
+.navbar-sa__theme i,
+.navbar-sa__hamburger span,
+.navbar-sa__lang-toggle i,
+.navbar-sa__search-toggle i {
+  color: var(--navbar-text);
+}
+.navbar-sa__logo-text {
+  color: var(--navbar-text);
+}
+.navbar-sa__logo-text small {
+  color: var(--navbar-text-muted);
+}
+
+/* ...pero si en dark usamos navbar negro, los hovers oscuros ya estaban.
+   En claro, el badge del navbar mantiene borde según fondo. */
+.navbar-sa__badge {
+  border-color: var(--navbar-bg);
+}
+
+/* ============ 5) LOGO ROJO EN AMBOS TEMAS ============ */
+/* Tinte rojo uniforme (multiplica la forma manteniendo transparencia) */
+.navbar-sa__logo-img,
+.navbar-sa__drawer-logo {
+  filter: sepia(1) saturate(6) hue-rotate(318deg) brightness(.95) contrast(1.02);
+}
+
+/* ============ 6) MÓDULOS — ADAPTACIÓN OSCURA ============ */
+[data-theme="dark"] body.dark-mode {
+  background-color: var(--body-bg);
+  color: var(--body-text);
+}
+
+/* ---- Foro ---- */
+[data-theme="dark"] .foro-hero,
+[data-theme="dark"] .foro-cat-card,
+[data-theme="dark"] .foro-tema-item,
+[data-theme="dark"] .foro-mensaje,
+[data-theme="dark"] .foro-reglas__body,
+[data-theme="dark"] .foro-nuevo-tema__panel {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+[data-theme="dark"] .foro-cat-card__name,
+[data-theme="dark"] .foro-tema-item__title a,
+[data-theme="dark"] .foro-mensaje__title,
+[data-theme="dark"] .foro-reglas,
+[data-theme="dark"] .foro-nuevo-tema__toggle,
+[data-theme="dark"] .foro-section-title {
+  color: var(--text-primary);
+}
+[data-theme="dark"] .foro-search__input,
+[data-theme="dark"] .foro-nuevo-tema textarea,
+[data-theme="dark"] .foro-nuevo-tema input,
+[data-theme="dark"] .foro-nuevo-tema select {
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+[data-theme="dark"] .foro-cat-card__meta,
+[data-theme="dark"] .foro-tema-item__meta,
+[data-theme="dark"] .foro-mensaje__meta {
+  color: var(--text-secondary);
+}
+[data-theme="dark"] .foro-badge--cat { background: #333; color: #fff; }
+[data-theme="dark"] .foro-avatar { color: #fff; }
+
+/* ---- Catálogo ERP ---- */
+[data-theme="dark"] .catalogo-erp-cat,
+[data-theme="dark"] .catalogo-erp__producto,
+[data-theme="dark"] .catalogo-erp__resumen,
+[data-theme="dark"] .catalogo-erp__ayuda,
+[data-theme="dark"] .catalogo-erp__error {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+[data-theme="dark"] .catalogo-erp-cat__titulo,
+[data-theme="dark"] .catalogo-erp__producto-cabeza,
+[data-theme="dark"] .catalogo-erp__resumen h3 {
+  color: var(--text-primary);
+}
+[data-theme="dark"] .catalogo-erp-cat__desc,
+[data-theme="dark"] .catalogo-erp__producto p,
+[data-theme="dark"] .catalogo-erp__resumen p,
+[data-theme="dark"] .catalogo-erp__ayuda {
+  color: var(--text-secondary);
+}
+[data-theme="dark"] .catalogo-erp-cat__sin-foto {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+/* ---- Mapa ---- */
+[data-theme="dark"] .mapa-panel,
+[data-theme="dark"] .dep-card {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+[data-theme="dark"] .mapa-panel__header h2,
+[data-theme="dark"] .dep-card__name,
+[data-theme="dark"] .mapa-panel__title-row h2 {
+  color: var(--text-primary);
+}
+[data-theme="dark"] .mapa-panel__header p,
+[data-theme="dark"] .dep-card__desc,
+[data-theme="dark"] .dep-card__meta,
+[data-theme="dark"] .mapa-legend__label,
+[data-theme="dark"] .mapa-panel__no-deps {
+  color: var(--text-secondary);
+}
+[data-theme="dark"] .mapa-tooltip {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-md);
+}
+[data-theme="dark"] .mapa-hero__title,
+[data-theme="dark"] .mapa-hero__intro {
+  color: var(--text-primary);
+}
+
+/* ---- Informaciones ---- */
+[data-theme="dark"] .info-card {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+[data-theme="dark"] .info-chip {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+[data-theme="dark"] .info-bell__panel,
+[data-theme="dark"] .survey-bell__panel {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-lg);
+}
+[data-theme="dark"] .info-card__title {
+  color: var(--text-primary);
+}
+[data-theme="dark"] .info-card__badge {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+[data-theme="dark"] .info-toast {
+  background: #1E1E1E;
+  color: #F5F5F5;
+}
+
+/* ---- Usuarios ---- */
+[data-theme="dark"] .auth-card {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-lg);
+}
+[data-theme="dark"] .auth-card__title,
+[data-theme="dark"] .auth-card__subtitle,
+[data-theme="dark"] .auth-form .form-label,
+[data-theme="dark"] .auth-form .form-text {
+  color: var(--text-primary);
+}
+[data-theme="dark"] .perfil-card {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+[data-theme="dark"] .perfil-card .card-header {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+/* ---- Encuestas (listado + paneles base) ---- */
+[data-theme="dark"] .survey-bell__panel {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+[data-theme="dark"] .survey-float__panel,
+[data-theme="dark"] .survey-modal {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* ---- PWA ---- */
+[data-theme="dark"] .pwa-install {
+  background: #1E1E1E;
+  border: 1px solid var(--border-color);
+  color: #F5F5F5;
+}
+
+/* ---- Mapa modal flotante ---- */
+[data-theme="dark"] .mapa-modal {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+[data-theme="dark"] .mapa-modal__header {
+  background: var(--bg-primary);
+  color: #fff;
+}
+[data-theme="dark"] .mapa-modal__body,
+[data-theme="dark"] .mapa-modal__footer {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* ============ 7) FORMS GENÉRICOS ============ */
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select,
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="search"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="password"],
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+[data-theme="dark"] .form-control::placeholder,
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: var(--text-secondary);
+}
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-select:focus {
+  border-color: var(--accent);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+}
+
+/* ============ 8) ACCESIBILIDAD — contraste AA + focus ============ */
+:root {
+  --focus-ring: 3px solid var(--accent);
+}
+[data-theme="dark"] :focus-visible {
+  outline-color: var(--accent-hover);
+}
+.navbar-sa a:focus-visible,
+.navbar-sa button:focus-visible,
+.info-bell__btn:focus-visible,
+.survey-bell__btn:focus-visible,
+.back-to-top:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ============ 9) REDUCED MOTION ============ */
+@media (prefers-reduced-motion: reduce) {
+  body,
+  .navbar-sa,
+  .card,
+  .info-card,
+  .foro-cat-card,
+  .foro-tema-item,
+  .catalogo-erp-cat,
+  .mapa-panel,
+  .dep-card,
+  .auth-card,
+  input,
+  select,
+  textarea,
+  .navbar-sa__logo-img,
+  .nav-link,
+  .btn,
+  .info-bell__btn {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}

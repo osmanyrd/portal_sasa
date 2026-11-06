@@ -1,0 +1,68 @@
+{% load wagtailimages_tags wagtailcore_tags %}
+<footer class="footer mt-auto bg-dark text-white pt-5">
+    <div class="container">
+        <div class="row g-4 pb-4">
+            <div class="col-lg-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    {% with logo=settings.core.SiteSettings.logo %}
+                        {% if logo %}
+                            {% image logo max-160x48 alt="{{ SITE_NAME }}" %}
+                        {% else %}
+                            <i class="bi bi-buildings fs-3"></i>
+                            <span class="fs-5 fw-semibold">{{ SITE_NAME }}</span>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                <div class="text-secondary small rich-text-footer">
+                    {{ settings.core.SiteSettings.footer_text|richtext }}
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <h6 class="text-uppercase text-secondary mb-3">Contacto</h6>
+                <ul class="list-unstyled d-grid gap-2 small">
+                    {% if settings.core.SiteSettings.address %}
+                        <li><i class="bi bi-geo-alt me-2"></i>{{ settings.core.SiteSettings.address }}</li>
+                    {% endif %}
+                    {% if settings.core.SiteSettings.phone %}
+                        <li><i class="bi bi-telephone me-2"></i>
+                            <a class="link-light link-underline-opacity-0" href="tel:{{ settings.core.SiteSettings.phone|cut:' ' }}">
+                                {{ settings.core.SiteSettings.phone }}</a>
+                        </li>
+                    {% endif %}
+                    {% if settings.core.SiteSettings.contact_email %}
+                        <li><i class="bi bi-envelope me-2"></i>
+                            <a class="link-light link-underline-opacity-0" href="mailto:{{ settings.core.SiteSettings.contact_email }}">
+                                {{ settings.core.SiteSettings.contact_email }}</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <h6 class="text-uppercase text-secondary mb-3">Seguinos</h6>
+                <div class="d-flex gap-2">
+                    {% with ss=settings.core.SiteSettings %}
+                        {% if ss.facebook_url %}
+                            <a href="{{ ss.facebook_url }}" target="_blank" rel="noopener" aria-label="Facebook"
+                               class="social-link"><i class="bi bi-facebook"></i></a>{% endif %}
+                        {% if ss.instagram_url %}
+                            <a href="{{ ss.instagram_url }}" target="_blank" rel="noopener" aria-label="Instagram"
+                               class="social-link"><i class="bi bi-instagram"></i></a>{% endif %}
+                        {% if ss.linkedin_url %}
+                            <a href="{{ ss.linkedin_url }}" target="_blank" rel="noopener" aria-label="LinkedIn"
+                               class="social-link"><i class="bi bi-linkedin"></i></a>{% endif %}
+                        {% if ss.x_url %}
+                            <a href="{{ ss.x_url }}" target="_blank" rel="noopener" aria-label="X"
+                               class="social-link"><i class="bi bi-twitter-x"></i></a>{% endif %}
+                        {% if ss.youtube_url %}
+                            <a href="{{ ss.youtube_url }}" target="_blank" rel="noopener" aria-label="YouTube"
+                               class="social-link"><i class="bi bi-youtube"></i></a>{% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+        <div class="border-top border-secondary py-3 d-flex flex-column flex-md-row justify-content-between gap-2 small text-secondary">
+            <span>© {% now "Y" %} {{ SITE_NAME }}. Todos los derechos reservados.</span>
+            <span>Hecho con Django + Wagtail</span>
+        </div>
+    </div>
+</footer>

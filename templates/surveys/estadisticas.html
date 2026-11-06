@@ -1,0 +1,245 @@
+{% extends "automotive/base_automotive.html" %}
+{% load static %}
+{% load survey_render %}
+
+{% block title %}Estadisticas: {{ encuesta.nombre }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'surveys/css/surveys.css' %}">
+<link rel="stylesheet" href="{% static 'catalogo_erp/css/catalog-erp.css' %}">
+{% endblock %}
+
+{% block content %}
+{% include "surveys/includes/survey_hero.html" with hero_tag="Estadísticas" hero_title=encuesta.nombre %}
+<div class="container py-5">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <a href="{% url 'surveys:list' %}" class="text-decoration-none">
+          <i class="bi bi-arrow-left me-1"></i>Volver a encuestas
+        </a>
+        <a href="{% url 'surveys:exportar_csv' encuesta.pk %}" class="btn survey-btn-outline">
+          <i class="bi bi-download me-1"></i>Exportar CSV
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm survey-stat-card text-center p-4">
+        <div class="survey-stat-icon mb-2">
+          <i class="bi bi-people"></i>
+        </div>
+        <div class="survey-stat-value">{{ total_completadas }}</div>
+        <div class="survey-stat-label">Participaciones completadas</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm survey-stat-card text-center p-4">
+        <div class="survey-stat-icon mb-2">
+          <i class="bi bi-check2-all"></i>
+        </div>
+        <div class="survey-stat-value">{{ encuesta.preguntas.count }}</div>
+        <div class="survey-stat-label">Preguntas</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm survey-stat-card text-center p-4">
+        <div class="survey-stat-icon mb-2">
+          <i class="bi bi-bar-chart"></i>
+        </div>
+        <div class="survey-stat-value">{{ encuesta.total_participaciones }}</div>
+        <div class="survey-stat-label">Participaciones totales</div>
+      </div>
+    </div>
+  </div>
+
+  {% for item in estadisticas %}
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header survey-question-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+          <span class="badge survey-badge me-2">{{ item.pregunta.get_tipo_display }}</span>
+          {{ item.texto }}
+        </div>
+        <span class="text-secondary small"><i class="bi bi-check-circle me-1"></i>{{ item.total }} respuesta{{ item.total|pluralize }}</span>
+      </div>
+      <div class="card-body">
+        {% if item.promedio is not none %}
+          <div class="row g-4 mb-3">
+            <div class="col-md-4">
+              <div class="survey-stat-card text-center p-3">
+                <div class="survey-stat-value fs-2">{{ item.promedio }}</div>
+                <div class="survey-stat-label small">Promedio</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="survey-stat-card text-center p-3">
+                <div class="survey-stat-value fs-2">{{ item.mediana }}</div>
+                <div class="survey-stat-label small">Mediana</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="survey-stat-card text-center p-3">
+                <div class="survey-stat-value fs-2">{{ item.total }}</div>
+                <div class="survey-stat-label small">Respuestas</div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
+        {% if item.distribucion %}
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <canvas id="chart_{{ forloop.counter }}" height="220"></canvas>
+            </div>
+            <div class="col-md-6">
+              <div class="survey-results-list mt-3 mt-md-0">
+                {% for d in item.distribucion %}
+                  <div class="survey-result-row mb-2">
+                    <div class="d-flex justify-content-between small mb-1">
+                      <span>
+                        {% if d.emoji %}{{ d.emoji }} {% endif %}
+                        {% if d.imagen %}<img src="{{ d.imagen.file.url }}" alt="" class="me-1" style="width:18px;height:18px;object-fit:cover;border-radius:4px;">{% endif %}
+                        {{ d.label }}
+                        {% if item.tipo == 'ranking' and d.promedio_posicion is not none %}
+                          <small class="text-secondary">(pos. media {{ d.promedio_posicion }})</small>
+                        {% endif %}
+                      </span>
+                      <span class="text-secondary">{{ d.votos }} ({{ d.porcentaje }}%)</span>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                      <div class="progress-bar survey-progress-bar"
+                           role="progressbar"
+                           style="width: {{ d.porcentaje }}%;"
+                           aria-valuenow="{{ d.porcentaje }}"
+                           aria-valuemin="0"
+                           aria-valuemax="100">
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        {% elif item.tipo == 'fecha' %}
+          <p class="text-secondary"><i class="bi bi-calendar3 me-2"></i>{{ item.fechas|length }} fecha{{ item.fechas|length|pluralize }} registrada{{ item.fechas|length|pluralize }}</p>
+          <ul class="list-unstyled small mb-0">
+            {% for f in item.fechas %}<li><i class="bi bi-calendar-event me-2"></i>{{ f|date:"d/m/Y" }}</li>{% endfor %}
+          </ul>
+        {% elif item.tipo == 'hora' %}
+          <p class="text-secondary"><i class="bi bi-clock me-2"></i>{{ item.horas|length }} hora{{ item.horas|length|pluralize }} registrada{{ item.horas|length|pluralize }}</p>
+          <ul class="list-unstyled small mb-0">
+            {% for h in item.horas %}<li><i class="bi bi-clock-history me-2"></i>{{ h|time:"H:i" }}</li>{% endfor %}
+          </ul>
+        {% elif item.tipo == 'texto_corto' or item.tipo == 'texto_largo' %}
+          <ul class="list-unstyled mb-0">
+            {% for t in item.textos %}
+              <li class="mb-2">
+                <i class="bi bi-chat-left-quote me-2 text-secondary"></i>
+                <span>{{ t }}</span>
+              </li>
+            {% empty %}
+              <li class="text-secondary"><i class="bi bi-info-circle me-1"></i>Aun no hay respuestas de texto.</li>
+            {% endfor %}
+          </ul>
+        {% elif item.filas %}
+          <div class="table-responsive">
+            <table class="table table-sm survey-matrix-table mb-0">
+              <thead>
+                <tr>
+                  <th>Fila</th>
+                  <th class="text-center">Promedio</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for fila in item.filas %}
+                  <tr>
+                    <td>{{ fila.fila }}</td>
+                    <td class="text-center">
+                      {% if fila.promedio is not none %}
+                        {{ fila.promedio }}
+                      {% else %}
+                        <span class="text-secondary">—</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="text-secondary mb-0"><i class="bi bi-info-circle me-1"></i>Aun no hay respuestas para esta pregunta.</p>
+        {% endif %}
+      </div>
+    </div>
+  {% empty %}
+    <div class="alert alert-info">
+      <i class="bi bi-info-circle me-1"></i>No hay preguntas en esta encuesta.
+    </div>
+  {% endfor %}
+</div>
+
+<script src="{% static 'vendor/js/chart.umd.min.js' %}"></script>
+<script>
+(function(){
+  var colores = [
+    '#0d6efd','#198754','#ffc107','#dc3545','#6f42c1',
+    '#0dcaf0','#fd7e14','#20c997','#d63384','#6610f2'
+  ];
+
+  var datos = [
+    {% for item in estadisticas %}
+      {% if item.distribucion %}
+      {
+        id: {{ forloop.counter }},
+        tipo: "{{ item.tipo }}",
+        labels: [{% for d in item.distribucion %}{{ d.label|tojson }}{% if not forloop.last %},{% endif %}{% endfor %}],
+        values: [{% for d in item.distribucion %}{{ d.votos }}{% if not forloop.last %},{% endif %}{% endfor %}]{% if not forloop.last %},{% endif %}
+      }
+      {% if not forloop.last %},{% endif %}
+      {% endif %}
+    {% endfor %}
+  ];
+
+  datos.forEach(function(d){
+    var ctx = document.getElementById("chart_" + d.id);
+    if (!ctx) return;
+
+    var esBarras = (d.tipo === "multiple" || d.tipo === "simple");
+    var esBarraHorizontal = d.tipo === "nps" || d.tipo === "estrellas" || d.tipo === "emojis" || d.tipo === "slider" || d.tipo === "numero" || d.tipo === "sino" || d.tipo === "ranking";
+    var chartOpts = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: !esBarras, position: "bottom", labels: { padding: 12, usePointStyle: true } }
+      }
+    };
+
+    var chartType = "doughnut";
+    if (esBarras) {
+      chartType = "bar";
+      chartOpts.scales = { y: { beginAtZero: true, ticks: { stepSize: 1 } } };
+    } else if (esBarraHorizontal) {
+      chartType = "bar";
+      chartOpts.indexAxis = "y";
+      chartOpts.scales = { x: { beginAtZero: true, ticks: { stepSize: 1 } } };
+    }
+
+    new Chart(ctx, {
+      type: chartType,
+      data: {
+        labels: d.labels,
+        datasets: [{
+          data: d.values,
+          backgroundColor: colores.slice(0, d.labels.length),
+          borderWidth: 2,
+          borderRadius: chartType === "bar" ? 6 : 0
+        }]
+      },
+      options: chartOpts
+    });
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% load static %}
+
+{% if user.is_authenticated %}
+<div class="user-menu">
+  <button class="user-menu__toggle" id="userMenuToggle"
+          aria-expanded="false" aria-haspopup="true" aria-label="Menú de usuario">
+    {% if user.perfil.avatar %}
+      <img src="{{ user.perfil.avatar_url }}" alt="" class="user-menu__avatar" width="30" height="30">
+    {% else %}
+      <div class="user-menu__avatar-placeholder" aria-hidden="true">
+        {{ user.perfil.inicial }}
+      </div>
+    {% endif %}
+    <span class="user-menu__name d-none d-md-inline">{{ user.perfil.display_name }}</span>
+    <i class="bi bi-chevron-down user-menu__chevron" aria-hidden="true"></i>
+  </button>
+
+  <div class="user-menu__dropdown" id="userMenuDropdown" role="menu">
+    <div class="user-menu__header">
+      <strong>{{ user.perfil.display_name }}</strong>
+      <small>{{ user.email }}</small>
+    </div>
+    <div class="user-menu__divider"></div>
+    <button type="button" class="user-menu__link user-menu__link--btn" role="menuitem"
+            data-open-perfil>
+      <i class="bi bi-person" aria-hidden="true"></i> Mi perfil
+    </button>
+    {% if user.is_staff %}
+    <a href="/cms/" class="user-menu__link" role="menuitem">
+      <i class="bi bi-gear" aria-hidden="true"></i> Administración
+    </a>
+    {% endif %}
+    <div class="user-menu__divider"></div>
+    <a href="{% url 'logout' %}" class="user-menu__link user-menu__link--danger" role="menuitem">
+      <i class="bi bi-box-arrow-left" aria-hidden="true"></i> Salir
+    </a>
+  </div>
+</div>
+
+{% else %}
+<div class="user-menu">
+  <button class="user-menu__toggle" id="authMenuToggle"
+          aria-expanded="false" aria-haspopup="true" aria-label="Acceder">
+    <i class="bi bi-person-circle" aria-hidden="true"></i>
+    <span class="user-menu__name d-none d-md-inline">Acceder</span>
+    <i class="bi bi-chevron-down user-menu__chevron" aria-hidden="true"></i>
+  </button>
+
+  <div class="user-menu__dropdown" id="authMenuDropdown" role="menu">
+    <div class="user-menu__header user-menu__header--auth">
+      <strong><i class="bi bi-person-circle me-1" aria-hidden="true"></i> Acceso al sitio</strong>
+      <small>Ingresá o creá tu cuenta</small>
+    </div>
+    <a href="{% url 'login' %}" class="user-menu__link" role="menuitem">
+      <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Iniciar sesión
+    </a>
+    <div class="user-menu__divider"></div>
+    <a href="{% url 'registro' %}" class="user-menu__link" role="menuitem">
+      <i class="bi bi-person-plus" aria-hidden="true"></i> Registrarse
+    </a>
+  </div>
+</div>
+{% endif %}

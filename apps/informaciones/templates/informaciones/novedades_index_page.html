@@ -1,0 +1,107 @@
+{% extends "automotive/base_automotive.html" %}
+{% load static wagtailcore_tags %}
+
+{% block title %}{{ page.title }} | Servicios Automotores S.A{% endblock %}
+{% block meta_description %}{{ page.introduccion|striptags|truncatechars:160 }}{% endblock %}
+
+{% block content %}
+<div class="info-hero-wrap">
+  <div class="info-hero-wrap__bg" aria-hidden="true"></div>
+  <div class="container info-hero">
+    <span class="section-tag"><i class="bi bi-stars me-2" aria-hidden="true"></i>Novedades</span>
+    <h1 class="info-hero__title fw-bold mt-2 mb-3">{{ page.title }}</h1>
+    {% if page.introduccion %}
+      <div class="info-hero__intro rich-text">{{ page.introduccion|richtext }}</div>
+    {% endif %}
+  </div>
+</div>
+
+<section class="container py-4">
+  <nav class="info-filtros mb-4" aria-label="Filtrar novedades por tipo">
+    <a class="info-chip{% if not tipo_activo %} is-active{% endif %}" href="{{ page.url }}">Todas</a>
+    {% for valor, etiqueta in tipos_disponibles %}
+      <a class="info-chip{% if tipo_activo == valor %} is-active{% endif %}" href="?tipo={{ valor }}">
+        {% if valor == 'promocion' %}<i class="bi bi-tag-fill" aria-hidden="true"></i>
+        {% elif valor == 'oferta' %}<i class="bi bi-tags-fill" aria-hidden="true"></i>
+        {% elif valor == 'rebaja' %}<i class="bi bi-percent" aria-hidden="true"></i>
+        {% elif valor == 'lanzamiento' %}<i class="bi bi-rocket-takeoff-fill" aria-hidden="true"></i>
+        {% elif valor == 'empleo' %}<i class="bi bi-briefcase-fill" aria-hidden="true"></i>
+        {% elif valor == 'licitacion' %}<i class="bi bi-file-earmark-text-fill" aria-hidden="true"></i>
+        {% else %}<i class="bi bi-newspaper" aria-hidden="true"></i>{% endif %}
+        {{ etiqueta }}
+      </a>
+    {% endfor %}
+  </nav>
+
+  {% if novedades.object_list %}
+    <div class="info-lista">
+      {% for novedad in novedades %}
+        <article class="info-card">
+          <div class="info-card__main">
+            <span class="info-card__badge info-card__badge--{{ novedad.tipo }}">
+              <i class="bi {{ novedad.etiqueta_tipo }} me-1" aria-hidden="true"></i>{{ novedad.nombre_tipo }}
+            </span>
+            <h2 class="info-card__title">
+              <a href="{{ novedad.url }}">{{ novedad.title }}</a>
+            </h2>
+            <div class="info-card__meta">
+              <span><i class="bi bi-clock me-1" aria-hidden="true"></i>{{ novedad.fecha_publicacion|date:"d M Y H:i" }}</span>
+              {% if novedad.destacado %}<span class="info-card__destacada"><i class="bi bi-star-fill me-1" aria-hidden="true"></i>Destacada</span>{% endif %}
+              {% if novedad.es_reciente %}<span class="info-card__reciente"><i class="bi bi-bell-fill me-1" aria-hidden="true"></i>Reciente</span>{% endif %}
+            </div>
+            {% if novedad.resumen %}
+              <p class="info-card__resumen">{{ novedad.resumen }}</p>
+            {% elif novedad.contenido %}
+              <p class="info-card__resumen">{{ novedad.contenido|striptags|truncatechars:180 }}</p>
+            {% endif %}
+          </div>
+          <div class="info-card__acciones">
+            {% if novedad.enlace_externo %}
+              <a href="{{ novedad.enlace_externo }}" class="btn btn-outline-accent btn-sm" target="_blank" rel="noopener">Ver <i class="bi bi-box-arrow-up-right ms-1" aria-hidden="true"></i></a>
+            {% else %}
+              <a href="{{ novedad.url }}" class="btn btn-accent btn-sm">Leer más <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i></a>
+            {% endif %}
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+
+    {% if novedades.paginator.num_pages > 1 %}
+      <nav class="mt-5" aria-label="Paginación de novedades">
+        <ul class="pagination justify-content-center">
+          {% if novedades.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?{% if tipo_activo %}tipo={{ tipo_activo }}&{% endif %}page={{ novedades.previous_page_number }}" aria-label="Página anterior">&laquo;</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+          {% endif %}
+          {% for n in novedades.paginator.page_range %}
+            <li class="page-item{% if n == novedades.number %} active{% endif %}">
+              <a class="page-link" href="?{% if tipo_activo %}tipo={{ tipo_activo }}&{% endif %}page={{ n }}">{{ n }}</a>
+            </li>
+          {% endfor %}
+          {% if novedades.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?{% if tipo_activo %}tipo={{ tipo_activo }}&{% endif %}page={{ novedades.next_page_number }}" aria-label="Página siguiente">&raquo;</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+  {% else %}
+    <div class="info-vacio text-center py-5">
+      <i class="bi bi-bell-slash display-4" aria-hidden="true"></i>
+      <h2 class="h4 mt-3">No hay novedades</h2>
+      <p class="text-secondary">
+        No hay novedades{% if tipo_activo %} con el tipo seleccionado{% endif %} por ahora. Vuelve pronto.
+      </p>
+      {% if tipo_activo %}
+        <a href="{{ page.url }}" class="btn btn-outline-accent btn-sm mt-2">Ver todas las novedades</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

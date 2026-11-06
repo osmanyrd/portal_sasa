@@ -1,0 +1,71 @@
+{% comment %}
+Tarjeta de la sección de dos columnas (novedad o información).
+Espera `contenido` (Novedad/Informacion) y opcionalmente `modo`
+('vertical' | 'horizontal'). Por defecto: vertical.
+{% endcomment %}
+{% load wagtailimages_tags %}
+{% with enlace=contenido.enlace_externo|default:contenido.url modo=modo|default:"vertical" %}
+<div class="col-12{% if modo == 'vertical' %} col-sm-6{% else %} col-lg-6{% endif %}">
+  <article class="portada-card card-hover portada-card--{{ modo }}"
+           aria-label="{{ contenido.titulo_efectivo }}"
+           {% if enlace %}tabindex="0"{% endif %}>
+    {% if contenido.categoria == 'informacion' %}
+    <span class="portada-card__fija" title="Información fija">
+      <i class="bi bi-pin-angle-fill" aria-hidden="true"></i> Fija
+    </span>
+    {% endif %}
+    {% if enlace %}
+    <a class="portada-card__link" href="{{ enlace }}"
+       aria-label="Ver más: {{ contenido.titulo_efectivo }}">
+    {% else %}
+    <div class="portada-card__link">
+    {% endif %}
+
+      {% if modo == 'horizontal' %}
+      <div class="portada-card__media portada-card__media--lateral fondo-{{ contenido.estilo_fondo|default:'blur' }} posicion-{{ contenido.posicion_vertical|default:'center' }} posicion-h-{{ contenido.posicion_horizontal|default:'center' }}">
+        {% if contenido.ribbon %}
+        <span class="portada-card__ribbon portada-card__ribbon--{{ contenido.tipo }}"{% if contenido.color_ribbon %} style="background: {{ contenido.color_ribbon }}; color: {{ contenido.color_ribbon_texto }};"{% endif %}>{{ contenido.ribbon }}</span>
+        {% endif %}
+        {% if contenido.imagen %}
+          {% image contenido.imagen max-640x640 format-webp as card_img %}
+          <div class="portada-card__thumb" style="background-image: url('{{ card_img.url }}');" aria-hidden="true"></div>
+          <div class="portada-card__thumb-overlay" aria-hidden="true"></div>
+          <img src="{{ card_img.url }}" width="{{ card_img.width }}" height="{{ card_img.height }}"
+               class="portada-card__img" alt="{{ contenido.titulo_efectivo }}" loading="lazy">
+        {% endif %}
+      </div>
+      {% else %}
+      <div class="portada-card__media{% if estirar %} portada-card__media--stretch{% else %} ratio ratio-16x9{% endif %} fondo-{{ contenido.estilo_fondo|default:'blur' }} posicion-{{ contenido.posicion_vertical|default:'center' }} posicion-h-{{ contenido.posicion_horizontal|default:'center' }}">
+        {% if contenido.ribbon %}
+        <span class="portada-card__ribbon portada-card__ribbon--{{ contenido.tipo }}"{% if contenido.color_ribbon %} style="background: {{ contenido.color_ribbon }}; color: {{ contenido.color_ribbon_texto }};"{% endif %}>{{ contenido.ribbon }}</span>
+        {% endif %}
+        {% if contenido.imagen %}
+          {% image contenido.imagen max-640x640 format-webp as card_img %}
+          <div class="portada-card__thumb" style="background-image: url('{{ card_img.url }}');" aria-hidden="true"></div>
+          <div class="portada-card__thumb-overlay" aria-hidden="true"></div>
+          <img src="{{ card_img.url }}" width="{{ card_img.width }}" height="{{ card_img.height }}"
+               class="portada-card__img" alt="{{ contenido.titulo_efectivo }}" loading="lazy">
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <div class="portada-card__body">
+        <h4 class="portada-card__titulo">{{ contenido.titulo_efectivo }}</h4>
+        {% if contenido.resumen %}
+          <p class="portada-card__resumen">{{ contenido.resumen }}</p>
+        {% endif %}
+        {% if enlace %}
+          <span class="portada-card__ver">
+            Ver más <i class="bi bi-arrow-right" aria-hidden="true"></i>
+          </span>
+        {% endif %}
+      </div>
+
+    {% if enlace %}
+    </a>
+    {% else %}
+    </div>
+    {% endif %}
+  </article>
+</div>
+{% endwith %}

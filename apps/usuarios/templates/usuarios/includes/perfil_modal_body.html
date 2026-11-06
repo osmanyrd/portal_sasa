@@ -1,0 +1,118 @@
+{% load static wagtailimages_tags %}
+<div class="modal-header">
+  <div class="d-flex align-items-center gap-3">
+    {% if perfil.avatar %}
+      <img src="{{ perfil.avatar_url }}" alt="Avatar" class="rounded-circle" width="52" height="52">
+    {% else %}
+      <div class="perfil-avatar-placeholder" style="width:52px;height:52px;font-size:1.3rem;">
+        {{ perfil.inicial }}
+      </div>
+    {% endif %}
+    <div>
+      <h5 class="modal-title mb-0">{{ perfil.display_name }}</h5>
+      <small class="text-secondary">{{ perfil.user.email }}</small>
+      <span class="badge {% if perfil.es_juridica %}bg-primary{% else %}bg-success{% endif %} ms-1">{{ perfil.get_tipo_usuario_display }}</span>
+    </div>
+  </div>
+  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+</div>
+
+<div class="modal-body">
+  <ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="perfil-tab" data-bs-toggle="tab"
+              data-bs-target="#perfil-panel" type="button" role="tab"
+              aria-controls="perfil-panel" aria-selected="true">
+        <i class="bi bi-person me-1" aria-hidden="true"></i> Datos personales
+      </button>
+    </li>
+    {% if perfil.es_juridica %}
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="empresa-tab" data-bs-toggle="tab"
+              data-bs-target="#empresa-panel" type="button" role="tab"
+              aria-controls="empresa-panel" aria-selected="false">
+        <i class="bi bi-building me-1" aria-hidden="true"></i> Datos de empresa
+      </button>
+    </li>
+    {% endif %}
+  </ul>
+
+  <div class="tab-content pt-3">
+    <div class="tab-pane fade show active" id="perfil-panel" role="tabpanel" aria-labelledby="perfil-tab">
+      <form id="perfilForm" method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="id_telefono" class="form-label">Teléfono</label>
+            <input type="text" name="telefono" id="id_telefono" class="form-control"
+                   value="{{ perfil_form.telefono.value|default:'' }}">
+            <div class="invalid-feedback perfil-error" data-field="telefono"></div>
+          </div>
+          <div class="col-md-6">
+            <label for="id_avatar" class="form-label">Avatar</label>
+            <input type="file" name="avatar" id="id_avatar" class="form-control" accept="image/*">
+          </div>
+          <div class="col-12">
+            <label for="id_direccion" class="form-label">Dirección</label>
+            <textarea name="direccion" id="id_direccion" class="form-control" rows="2">{{ perfil_form.direccion.value|default:'' }}</textarea>
+          </div>
+          <div class="col-md-6">
+            <label for="id_ciudad" class="form-label">Ciudad</label>
+            <input type="text" name="ciudad" id="id_ciudad" class="form-control"
+                   value="{{ perfil_form.ciudad.value|default:'' }}">
+          </div>
+          <div class="col-md-6">
+            <label for="id_provincia" class="form-label">Provincia</label>
+            <input type="text" name="provincia" id="id_provincia" class="form-control"
+                   value="{{ perfil_form.provincia.value|default:'' }}">
+          </div>
+        </div>
+        <div class="modal-feedback perfil-feedback mt-3"></div>
+        <div class="mt-4 d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-accent"
+                  data-perfil-save data-form="perfil">
+            <i class="bi bi-check-lg me-1" aria-hidden="true"></i> Guardar cambios
+          </button>
+        </div>
+      </form>
+    </div>
+
+    {% if perfil.es_juridica %}
+    <div class="tab-pane fade" id="empresa-panel" role="tabpanel" aria-labelledby="empresa-tab">
+      <form id="perfilEmpresaForm" method="post" novalidate>
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-12">
+            <label for="id_nombre_empresa" class="form-label">Empresa</label>
+            <input type="text" name="nombre_empresa" id="id_nombre_empresa" class="form-control"
+                   value="{{ perfil_juridico_form.nombre_empresa.value|default:'' }}">
+          </div>
+          <div class="col-md-6">
+            <label for="id_cif_nit" class="form-label">CIF / NIT</label>
+            <input type="text" name="cif_nit" id="id_cif_nit" class="form-control"
+                   value="{{ perfil_juridico_form.cif_nit.value|default:'' }}">
+          </div>
+          <div class="col-md-6">
+            <label for="id_representante_legal" class="form-label">Representante legal</label>
+            <input type="text" name="representante_legal" id="id_representante_legal" class="form-control"
+                   value="{{ perfil_juridico_form.representante_legal.value|default:'' }}">
+          </div>
+        </div>
+        <div class="modal-feedback empresa-feedback mt-3"></div>
+        <div class="mt-4 d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-accent"
+                  data-perfil-save data-form="empresa">
+            <i class="bi bi-check-lg me-1" aria-hidden="true"></i> Guardar datos de empresa
+          </button>
+        </div>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="modal-footer">
+  <a href="{% url 'logout' %}" class="text-secondary me-auto">
+    <i class="bi bi-box-arrow-left me-1" aria-hidden="true"></i> Cerrar sesión
+  </a>
+</div>

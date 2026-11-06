@@ -1,0 +1,265 @@
+{% extends "usuarios/base_usuario.html" %}
+{% load static %}
+
+{% block title %}Registro de Empresas | Servicios Automotores S.A{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  .verify-step, .data-step { transition: opacity .3s ease; }
+  .verify-step.hidden, .data-step.hidden { display: none; }
+
+  .verify-input-group {
+    display: flex; gap: .75rem; align-items: stretch;
+  }
+  .verify-input-group .form-control {
+    flex: 1; font-size: 1.1rem; font-weight: 600;
+    letter-spacing: .5px; text-transform: uppercase;
+  }
+  .btn-verify {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: #1a1a2e; color: #fff; border: none;
+    padding: .6rem 1.4rem; border-radius: .65rem;
+    font-weight: 700; font-size: .92rem; white-space: nowrap;
+    cursor: pointer; transition: background .2s;
+  }
+  .btn-verify:hover { background: #16213e; }
+  .btn-verify:disabled { opacity: .6; cursor: not-allowed; }
+
+  .verify-status {
+    margin-top: 1rem; padding: .8rem 1rem; border-radius: .75rem;
+    font-size: .88rem; display: none;
+  }
+  .verify-status--loading {
+    display: flex; align-items: center; gap: .5rem;
+    background: #e7f1ff; border: 1px solid #b6d4fe; color: #084298;
+  }
+  .verify-status--ok {
+    display: flex; align-items: center; gap: .5rem;
+    background: #d1e7dd; border: 1px solid #badbcc; color: #0f5132;
+  }
+  .verify-status--err {
+    display: flex; align-items: center; gap: .5rem;
+    background: #f8d7da; border: 1px solid #f5c2c7; color: #842029;
+  }
+
+  .data-preview { background: #f8f9fa; border-radius: .75rem; padding: 1.2rem; }
+  .data-preview dt { font-weight: 600; color: #555; font-size: .82rem; }
+  .data-preview dd { margin-bottom: .75rem; font-size: .92rem; color: #111; }
+
+  .auth-type-toggle {
+    text-align: center; margin-top: 1.25rem; font-size: .85rem; color: #888;
+  }
+</style>
+{% endblock %}
+
+{% block auth_card %}
+<div class="auth-card auth-card--wide mx-auto" style="max-width:560px">
+  <div class="auth-card__header">
+    <h1 class="auth-card__title">
+      <i class="bi bi-building me-1" aria-hidden="true"></i> Registro de Empresas
+    </h1>
+    <p class="auth-card__subtitle">
+      Ingresá tu número de cliente SASA y verificá los datos de tu empresa.
+    </p>
+  </div>
+
+  {% if messages %}
+  <div class="mb-3">
+    {% for msg in messages %}
+      <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
+        {{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {# ── PASO 1: Verificar número (AJAX) ── #}
+  <div id="stepVerify" class="verify-step">
+    <form id="verifyForm" class="auth-form" novalidate>
+      {% csrf_token %}
+      <label for="id_cliente_id_sasa" class="form-label fw-semibold">
+        Número de cliente SASA
+      </label>
+      <div class="verify-input-group">
+        <input type="text" name="cliente_id_sasa" id="id_cliente_id_sasa"
+               class="form-control form-control-lg"
+               placeholder="Ej.: SASA001" autofocus required>
+        <button type="submit" class="btn-verify" id="btnVerify">
+          <i class="bi bi-search" aria-hidden="true"></i> Verificar
+        </button>
+      </div>
+      <div class="form-text">Ingresá el número de cliente asignado por SASA.</div>
+    </form>
+
+    <div id="verifyStatus" class="verify-status"></div>
+  </div>
+
+  {# ── PASO 2: Datos del cliente (confirmar y registrar) ── #}
+  <div id="stepData" class="data-step hidden">
+    <form method="post" class="auth-form" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="action" value="registrar">
+      <input type="hidden" name="cliente_id_sasa" id="regClienteId">
+      <input type="hidden" name="razon_social" id="regRazonSocial">
+      <input type="hidden" name="cif_nit" id="regCifNit">
+      <input type="hidden" name="representante_legal" id="regRepresentante">
+      <input type="hidden" name="email" id="regEmail">
+      <input type="hidden" name="telefono" id="regTelefono">
+      <input type="hidden" name="direccion" id="regDireccion">
+
+      <div class="data-preview">
+        <h5 class="mb-3 fw-bold">
+          <i class="bi bi-check-circle-fill text-success me-1" aria-hidden="true"></i>
+          Cliente verificado
+        </h5>
+        <dl class="row mb-0">
+          <dt class="col-sm-4">Razón social</dt>
+          <dd class="col-sm-8" id="showRazonSocial"></dd>
+
+          <dt class="col-sm-4">CIF / NIT</dt>
+          <dd class="col-sm-8" id="showCifNit"></dd>
+
+          <dt class="col-sm-4">Representante</dt>
+          <dd class="col-sm-8" id="showRepresentante"></dd>
+
+          <dt class="col-sm-4">Email</dt>
+          <dd class="col-sm-8" id="showEmail"></dd>
+
+          <dt class="col-sm-4">Teléfono</dt>
+          <dd class="col-sm-8" id="showTelefono"></dd>
+
+          <dt class="col-sm-4">Dirección</dt>
+          <dd class="col-sm-8" id="showDireccion"></dd>
+        </dl>
+      </div>
+
+      <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-accent flex-fill">
+          <i class="bi bi-person-check me-1" aria-hidden="true"></i> Confirmar y crear cuenta
+        </button>
+        <button type="button" class="btn btn-outline-secondary" id="btnBack">
+          <i class="bi bi-arrow-left" aria-hidden="true"></i> Volver
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="auth-card__footer">
+    <p>¿Ya tenés cuenta? <a href="{% url 'login' %}" class="auth-link">Iniciá sesión</a></p>
+    <div class="auth-type-toggle">
+      ¿Sos persona natural? <a href="{% url 'registro' %}" class="auth-link">Registrate acá</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  "use strict";
+
+  var form = document.getElementById("verifyForm");
+  var btnVerify = document.getElementById("btnVerify");
+  var status = document.getElementById("verifyStatus");
+  var stepVerify = document.getElementById("stepVerify");
+  var stepData = document.getElementById("stepData");
+  var btnBack = document.getElementById("btnBack");
+  var input = document.getElementById("id_cliente_id_sasa");
+
+  var fieldMap = {
+    razon_social: { input: "regClienteId",     show: "showRazonSocial" },
+    cif_nit:      { input: "regCifNit",        show: "showCifNit" },
+    razon_social2:{ input: "regRazonSocial",   show: "showRazonSocial" },
+    representante_legal: { input: "regRepresentante", show: "showRepresentante" },
+    email:        { input: "regEmail",         show: "showEmail" },
+    telefono:     { input: "regTelefono",      show: "showTelefono" },
+    direccion:    { input: "regDireccion",     show: "showDireccion" },
+  };
+
+  function setStatus(cls, html) {
+    status.className = "verify-status " + cls;
+    status.innerHTML = html;
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    var clienteId = input.value.trim();
+    if (!clienteId) {
+      setStatus("verify-status--err", '<i class="bi bi-exclamation-triangle"></i> Ingresá un número de cliente.');
+      input.focus();
+      return;
+    }
+
+    btnVerify.disabled = true;
+    btnVerify.innerHTML = '<span class="spinner-border" role="status" aria-hidden="true"></span> Verificando…';
+    setStatus("verify-status--loading", '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Consultando sistema SASA…');
+
+    var fd = new FormData();
+    fd.append("cliente_id_sasa", clienteId);
+    fd.append("csrfmiddlewaretoken", document.querySelector("[name=csrfmiddlewaretoken]").value);
+
+    fetch("{% url 'verificar_cliente' %}", {
+      method: "POST",
+      body: fd,
+    })
+    .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+    .then(function (res) {
+      btnVerify.disabled = false;
+      btnVerify.innerHTML = '<i class="bi bi-search" aria-hidden="true"></i> Verificar';
+
+      if (!res.ok || !res.data.ok) {
+        var msg = (res.data && res.data.error) || "No se pudo verificar el cliente.";
+        setStatus("verify-status--err", '<i class="bi bi-x-circle"></i> ' + escHtml(msg));
+        return;
+      }
+
+      setStatus("verify-status--ok", '<i class="bi bi-check-circle"></i> Cliente verificado: ' + escHtml(res.data.razon_social));
+
+      document.getElementById("regClienteId").value = clienteId;
+      document.getElementById("regRazonSocial").value = res.data.razon_social;
+      document.getElementById("regCifNit").value = res.data.cif_nit;
+      document.getElementById("regRepresentante").value = res.data.representante_legal;
+      document.getElementById("regEmail").value = res.data.email;
+      document.getElementById("regTelefono").value = res.data.telefono;
+      document.getElementById("regDireccion").value = res.data.direccion;
+
+      document.getElementById("showRazonSocial").textContent = res.data.razon_social;
+      document.getElementById("showCifNit").textContent = res.data.cif_nit;
+      document.getElementById("showRepresentante").textContent = res.data.representante_legal;
+      document.getElementById("showEmail").textContent = res.data.email;
+      document.getElementById("showTelefono").textContent = res.data.telefono;
+      document.getElementById("showDireccion").textContent = res.data.direccion;
+
+      setTimeout(function () {
+        stepVerify.classList.add("hidden");
+        stepData.classList.remove("hidden");
+      }, 800);
+    })
+    .catch(function () {
+      btnVerify.disabled = false;
+      btnVerify.innerHTML = '<i class="bi bi-search" aria-hidden="true"></i> Verificar';
+      setStatus("verify-status--err", '<i class="bi bi-exclamation-triangle"></i> Error de conexión. Intentá de nuevo.');
+    });
+  });
+
+  if (btnBack) {
+    btnBack.addEventListener("click", function () {
+      stepData.classList.add("hidden");
+      stepVerify.classList.remove("hidden");
+      status.className = "verify-status";
+      status.innerHTML = "";
+      input.focus();
+    });
+  }
+
+  function escHtml(s) {
+    var d = document.createElement("div");
+    d.appendChild(document.createTextNode(s));
+    return d.innerHTML;
+  }
+})();
+</script>
+{% endblock %}

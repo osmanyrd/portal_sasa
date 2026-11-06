@@ -1,0 +1,53 @@
+{% load static %}
+{% if contador_encuestas_pendientes and encuesta_pendiente %}
+<div class="survey-float" data-survey-float data-survey-float-wrapper>
+  <button
+    type="button"
+    class="survey-float__btn"
+    data-survey-float-btn
+    aria-expanded="false"
+    aria-haspopup="true"
+    aria-controls="surveyFloatPanel"
+    aria-label="Encuestas pendientes por responder: {{ contador_encuestas_pendientes }}">
+    <i class="bi bi-clipboard2-pulse" aria-hidden="true"></i>
+    {% if contador_encuestas_pendientes > 1 %}
+      <span class="survey-float__badge" aria-hidden="true">{{ contador_encuestas_pendientes }}</span>
+    {% endif %}
+  </button>
+
+  <div class="survey-float__panel" id="surveyFloatPanel" data-survey-float-panel hidden aria-label="Encuestas pendientes">
+    <div class="survey-bell__header survey-float__header">
+      <span class="survey-bell__title">
+        <i class="bi bi-clipboard2-pulse-fill" aria-hidden="true"></i> Encuestas
+      </span>
+      <span class="survey-bell__count">
+        {{ contador_encuestas_pendientes }} pendiente{{ contador_encuestas_pendientes|pluralize }}
+      </span>
+      <button type="button" class="survey-bell__close" data-survey-float-close aria-label="Cerrar lista de encuestas" title="Cerrar">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="survey-float__body">
+      {% for enc in encuestas_pendientes %}
+        <div class="survey-bell__item">
+          <p class="survey-bell__title-enc">{{ enc.titulo_publico }}</p>
+          {% if enc.descripcion %}
+            <p class="survey-bell__desc">{{ enc.descripcion }}</p>
+          {% endif %}
+          <span class="survey-bell__tipo survey-bell__tipo-{{ enc.tipo_encuesta }}">
+            {% if enc.tipo_encuesta == 'fija' %}Fija{% else %}Campaña{% endif %}
+          </span>
+          <a class="survey-bell__responder" href="{{ enc.url_votar }}">
+            <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>
+            Responder
+            <i class="bi bi-arrow-right ms-auto" aria-hidden="true"></i>
+          </a>
+        </div>
+      {% empty %}
+        <p class="survey-bell__desc">Tienes encuestas pendientes por responder.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}

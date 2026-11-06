@@ -1,0 +1,142 @@
+{% extends "automotive/base_automotive.html" %}
+{% load static wagtailcore_tags %}
+
+{% block title %}{{ page.title }} | Foro | Servicios Automotores S.A{% endblock %}
+{% block meta_description %}{{ page.cuerpo|striptags|truncatechars:160 }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'foro/css/foro.css' %}">
+<link rel="stylesheet" href="{% static 'catalogo_erp/css/catalog-erp.css' %}">
+{% endblock %}
+
+{% block content %}
+{# ── Cabecera (hero negro del catálogo) ── #}
+{% include "surveys/includes/survey_hero.html" with hero_tag="Foro" hero_title=page.title %}
+<div class="container py-4">
+  <nav aria-label="breadcrumb" class="foro-breadcrumb mb-3">
+    <ol class="breadcrumb small mb-0">
+      <li class="breadcrumb-item"><a href="/">Inicio</a></li>
+      <li class="breadcrumb-item"><a href="{{ page.get_parent.url }}">Foro</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ page.title }}</li>
+    </ol>
+  </nav>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      {# ── Tema original ── #}
+      <article class="foro-mensaje foro-mensaje--principal">
+        <header class="foro-mensaje__header">
+          <div class="foro-avatar foro-avatar--lg" aria-hidden="true">{{ page.inicial }}</div>
+          <div class="foro-mensaje__autor">
+            <div class="fw-bold">{{ page.autor_visible }}</div>
+            <small class="text-secondary fw-normal">{{ page.fecha_creacion|date:"d M Y · H:i" }}</small>
+          </div>
+          <div class="foro-mensaje__badges ms-auto">
+            <span class="foro-badge foro-badge--cat"><i class="bi bi-tag me-1" aria-hidden="true"></i>{{ page.categoria.nombre }}</span>
+            {% if page.esta_fijado %}<span class="foro-badge foro-badge--fijado"><i class="bi bi-pin-angle-fill me-1"></i>Fijado</span>{% endif %}
+            {% if page.esta_cerrado %}<span class="foro-badge foro-badge--cerrado"><i class="bi bi-lock-fill me-1"></i>Cerrado</span>{% endif %}
+          </div>
+        </header>
+        <div class="foro-mensaje__cuerpo rich-text">{{ page.cuerpo|richtext }}</div>
+        <footer class="foro-mensaje__footer">
+          <small class="text-secondary"><i class="bi bi-eye me-1" aria-hidden="true"></i>{{ page.visitas }} visitas</small>
+        </footer>
+      </article>
+
+      {# ── Respuestas ── #}
+      <h2 class="foro-section-title mt-5" id="respuestas">
+        <i class="bi bi-chat-dots me-2 text-accent" aria-hidden="true"></i>Respuestas ({{ respuestas|length }})
+      </h2>
+
+      {% if respuestas %}
+        {% for r in respuestas %}
+          <article class="foro-mensaje mt-3">
+            <header class="foro-mensaje__header">
+              <div class="foro-avatar" aria-hidden="true">{{ r.inicial }}</div>
+              <div class="foro-mensaje__autor">
+                <div class="fw-bold">{{ r.autor_visible }}</div>
+                <small class="text-secondary fw-normal">{{ r.fecha_creacion|date:"d M Y · H:i" }}</small>
+              </div>
+            </header>
+            <div class="foro-mensaje__cuerpo rich-text">{{ r.cuerpo|richtext }}</div>
+          </article>
+        {% endfor %}
+      {% else %}
+        <p class="text-secondary mt-3">Aún no hay respuestas. ¡Sé el primero en participar!</p>
+      {% endif %}
+
+      {% if respuestas_pendientes %}
+        <p class="small text-secondary mt-3">
+          <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>
+          Hay {{ respuestas_pendientes }} respuesta(s) pendiente(s) de moderación.
+        </p>
+      {% endif %}
+
+      {# ── Formulario de respuesta ── #}
+      {% if not page.esta_cerrado %}
+        {% if pueden_participar %}
+          <div class="foro-responder mt-5" id="responder">
+            <h2 class="foro-section-title">
+              <i class="bi bi-reply me-2 text-accent" aria-hidden="true"></i>Responder
+            </h2>
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+              <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="__responder" value="1">
+                {% if form_respuesta.non_field_errors %}
+                  <div class="alert alert-danger" role="alert">{{ form_respuesta.non_field_errors }}</div>
+                {% endif %}
+                <div class="mb-3">
+                  <label class="form-label" for="id_cuerpo">Tu respuesta</label>
+                  {{ form_respuesta.cuerpo }}
+                </div>
+                {% if form_respuesta.nombre_anonimo.field.required %}
+                  <div class="mb-3">
+                    <label class="form-label" for="id_nombre_anonimo">{{ form_respuesta.nombre_anonimo.label }}</label>
+                    {{ form_respuesta.nombre_anonimo }}
+                  </div>
+                {% endif %}
+                <button type="submit" class="btn btn-accent">
+                  <i class="bi bi-send me-1" aria-hidden="true"></i>Responder
+                </button>
+              </form>
+            </div>
+          </div>
+        {% else %}
+          <div class="alert alert-light border mt-5" role="alert">
+            <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
+            <a href="{% url 'login' %}?next={{ request.path|urlencode }}" class="text-decoration-underline">Inicia sesión</a> para responder en este tema.
+          </div>
+        {% endif %}
+      {% else %}
+        <div class="alert alert-secondary mt-5" role="alert">
+          <i class="bi bi-lock-fill me-2" aria-hidden="true"></i>Este tema está cerrado y no admite nuevas respuestas.
+        </div>
+      {% endif %}
+    </div>
+
+    {# ── Lateral: metadatos ── #}
+    <aside class="col-lg-4">
+      <div class="foro-sidebar">
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+          <h3 class="h6 text-uppercase text-secondary mb-3">Sobre este tema</h3>
+          <ul class="list-unstyled mb-0 small">
+            <li class="mb-2"><i class="bi bi-tag me-2 text-accent" aria-hidden="true"></i><strong>Categoría:</strong> {{ page.categoria.nombre }}</li>
+            <li class="mb-2"><i class="bi bi-chat-dots me-2 text-accent" aria-hidden="true"></i><strong>Respuestas:</strong> {{ total_respuestas }}</li>
+            <li class="mb-2"><i class="bi bi-eye me-2 text-accent" aria-hidden="true"></i><strong>Visitas:</strong> {{ page.visitas }}</li>
+            <li><i class="bi bi-clock me-2 text-accent" aria-hidden="true"></i><strong>Creado:</strong> {{ page.fecha_creacion|date:"d M Y" }}</li>
+          </ul>
+          <hr>
+          <a href="{{ page.get_parent.url }}" class="btn btn-outline-accent btn-sm w-100">
+            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Volver al foro
+          </a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'foro/js/foro.js' %}" defer></script>
+{% endblock %}
